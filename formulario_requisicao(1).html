@@ -1,0 +1,1328 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário de Requisição de Serviços</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header {
+            background-color: #fff;
+            padding: 20px 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .header h1 {
+            font-size: 22px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-section {
+            padding: 25px 30px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .section-header {
+            background-color: #e8e8e8;
+            padding: 12px 15px;
+            margin: -25px -30px 20px -30px;
+            border-left: 4px solid #666;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-header h2 {
+            font-size: 15px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .form-row.full {
+            grid-template-columns: 1fr;
+        }
+
+        .form-row.two-cols {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .form-row.three-cols {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .form-row.four-cols {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-size: 13px;
+            color: #333;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        input[type="number"],
+        select,
+        textarea {
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus,
+        input[type="date"]:focus,
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: #5cb85c;
+        }
+
+        input[type="text"]:disabled,
+        input[type="date"]:disabled {
+            background-color: #f0f0f0;
+            cursor: not-allowed;
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 8px;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .radio-option:hover {
+            border-color: #5cb85c;
+            background-color: #f8fff8;
+        }
+
+        .radio-option.selected {
+            border-color: #5cb85c;
+            background-color: #e8f5e8;
+        }
+
+        .radio-option input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .radio-option label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: 400;
+        }
+
+        .add-location-btn {
+            margin-top: 8px;
+            padding: 8px 16px;
+            background-color: #f89406;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: background-color 0.2s;
+        }
+
+        .add-location-btn:hover {
+            background-color: #d67d05;
+        }
+
+        .supplier-section {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .supplier-row {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr 1fr 1.5fr 1.5fr;
+            gap: 15px;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .supplier-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            padding: 20px 30px;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .btn-save {
+            background-color: #5cb85c;
+            color: white;
+        }
+
+        .btn-save:hover {
+            background-color: #4cae4c;
+        }
+
+        .btn-help {
+            background-color: #d9534f;
+            color: white;
+        }
+
+        .btn-help:hover {
+            background-color: #c9302c;
+        }
+
+        .btn-clear {
+            background-color: #f89406;
+            color: white;
+        }
+
+        .btn-clear:hover {
+            background-color: #d67d05;
+        }
+
+        .required::after {
+            content: " *";
+            color: #d9534f;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background-color: #d9534f;
+            color: white;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .icon {
+            font-size: 16px;
+        }
+
+        .search-btn {
+            padding: 10px 16px;
+            background-color: #5bc0de;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            margin-top: 22px;
+        }
+
+        .search-btn:hover {
+            background-color: #46b8da;
+        }
+
+        .detail-btn {
+            padding: 8px 16px;
+            background-color: #5bc0de;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        .detail-btn:hover {
+            background-color: #46b8da;
+        }
+
+        .new-local-btn {
+            padding: 8px 16px;
+            background-color: #f89406;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            margin-top: 8px;
+        }
+
+        .new-local-btn:hover {
+            background-color: #d67d05;
+        }
+
+        .include-btn {
+            padding: 8px 20px;
+            background-color: #5bc0de;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            align-self: flex-start;
+        }
+
+        .include-btn:hover {
+            background-color: #46b8da;
+        }
+
+        .items-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background-color: white;
+        }
+
+        .items-table th,
+        .items-table td {
+            padding: 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+            font-size: 13px;
+        }
+
+        .items-table th {
+            background-color: #f5f5f5;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .items-table tbody tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .items-table .action-btn {
+            padding: 5px 10px;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+
+        .items-table .edit-btn {
+            background-color: #5bc0de;
+            color: white;
+        }
+
+        .items-table .edit-btn:hover {
+            background-color: #46b8da;
+        }
+
+        .items-table .delete-btn {
+            background-color: #d9534f;
+            color: white;
+        }
+
+        .items-table .delete-btn:hover {
+            background-color: #c9302c;
+        }
+
+        .no-items-message {
+            text-align: center;
+            padding: 30px;
+            color: #999;
+            font-style: italic;
+        }
+
+        .item-card {
+            background-color: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .item-form-section {
+            border: 2px solid #5bc0de;
+            border-radius: 6px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: #f8fcff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Cadastro de Requisições de Contratações de Serviços de Pessoas Jurídicas</h1>
+        </div>
+
+        <form id="requisitionForm">
+            <!-- Seção 1: Dados Gerais -->
+            <div class="form-section">
+                <div class="section-header">
+                    <span class="icon">📋</span>
+                    <h2>Dados Gerais</h2>
+                </div>
+
+                <div class="form-row three-cols">
+                    <div class="form-group">
+                        <label for="numero">Número</label>
+                        <input type="text" id="numero" name="numero" placeholder="Gerado automaticamente" disabled>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="projeto" class="required">Projeto</label>
+                        <input type="text" id="projeto" name="projeto" value="11986-5 - CONTRATO Nº 62/2024 - PROJETO TEKO PORÃ" disabled>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="data" class="required">Data</label>
+                        <input type="date" id="data" name="data" disabled>
+                    </div>
+                </div>
+
+                <div class="form-row two-cols">
+                    <div class="form-group">
+                        <label for="limiteAtendimento">Limite Atendimento</label>
+                        <input type="date" id="limiteAtendimento" name="limiteAtendimento">
+                        <span class="status-badge">$ SALDOS</span>
+                    </div>
+                </div>
+
+                <div class="form-row full">
+                    <div class="form-group">
+                        <label for="metasEtapas">Metas\Etapas (Atividades)</label>
+                        <select id="metasEtapas" name="metasEtapas">
+                            <option value="">Selecione...</option>
+                            <option value="meta1">Meta 1 – Elaboração de Planos de Gestão Territorial e Ambiental (PGTAs)</option>
+                            <option value="meta2">Meta 2 – Fortalecimento de Mulheres e Jovens Indígenas</option>
+                            <option value="meta3">Meta 3 – Implementação do Projeto Tekojaía: Semeando Liberdade</option>
+                            <option value="meta4">Meta 4 – Desenvolvimento de Iniciativas de Proteção às Casas de Reza</option>
+                            <option value="meta5">Meta 5 – Valorização Cultural da Dança Kipaé, Dança da Ema</option>
+                            <option value="meta6">Meta 6 – Fomento à Soberania Alimentar por Meio da Piscicultura</option>
+                            <option value="meta7">Meta 7 – Implementação de Quintais Produtivos</option>
+                            <option value="meta8">Meta 8 – Publicação e Divulgação das Ações do Programa Teko Porã</option>
+                            <option value="meta9">Meta 9 – Pagamento de Despesas Operacionais e Administrativas</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row two-cols">
+                    <div class="form-group">
+                        <label for="rubrica">Rubrica</label>
+                        <select id="rubrica" name="rubrica">
+                            <option value="">Selecione...</option>
+                        </select>
+                        <span class="status-badge">$SALDOS</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="descricaoRubrica">Descrição da Rubrica</label>
+                        <select id="descricaoRubrica" name="descricaoRubrica">
+                            <option value="">Selecione...</option>
+                        </select>
+                        <span class="status-badge">$SALDOS</span>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="localEntrega" class="required">Local Entrega</label>
+                        <select id="localEntrega" name="localEntrega">
+                            <option value="">Selecione...</option>
+                            <option value="local1">AGUAPEL KURUSU AMBA 2, PM7G+M3, S/N, AGUAPEÍ KURUSU AMBA 2, CORONEL SAPUCAIA-MS</option>
+                        </select>
+                        <div style="display: flex; gap: 10px;">
+                            <button type="button" class="detail-btn">📄 Detalhes</button>
+                            <button type="button" class="new-local-btn">+ Novo Local</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="required">Forma de Avaliação das Cotações</label>
+                        <div class="radio-group">
+                            <div class="radio-option">
+                                <input type="radio" id="avaliacaoGlobal" name="avaliacaoCotacao" value="global" required>
+                                <label for="avaliacaoGlobal">Global</label>
+                            </div>
+                            <div class="radio-option selected">
+                                <input type="radio" id="avaliacaoPorItem" name="avaliacaoCotacao" value="porItem" checked required>
+                                <label for="avaliacaoPorItem">Por Item</label>
+                            </div>
+                            <div class="radio-option">
+                                <input type="radio" id="avaliacaoNaoDefinida" name="avaliacaoCotacao" value="naoDefinida" required>
+                                <label for="avaliacaoNaoDefinida">Não Definida</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-row full">
+                    <div class="form-group">
+                        <label for="justificativaFinalidade" class="required">Justificativa\Finalidade</label>
+                        <textarea id="justificativaFinalidade" name="justificativaFinalidade" rows="4" required></textarea>
+                    </div>
+                </div>
+
+                <div class="form-row full">
+                    <div class="form-group">
+                        <label for="observacoes">Observações</label>
+                        <textarea id="observacoes" name="observacoes" rows="4"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção 2: Anexo de Documento -->
+            <div class="form-section">
+                <div class="section-header">
+                    <span class="icon">📎</span>
+                    <h2>Anexo de Documento / Documento Comprobatório</h2>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <input type="file" id="anexoDocumento" name="anexoDocumento" multiple>
+                        <button type="button" class="btn-help" style="margin-top: 10px;">Upload</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção 3: Itens da Requisição -->
+            <div class="form-section">
+                <div class="section-header">
+                    <span class="icon">📝</span>
+                    <h2>Itens da Requisição</h2>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Total em Itens</label>
+                        <input type="text" id="totalItens" name="totalItens" value="0" disabled>
+                    </div>
+                </div>
+
+                <!-- Formulário de Cadastro de Item -->
+                <div class="item-form-section">
+                    <h3 style="font-size: 16px; margin-bottom: 20px; color: #333;">📋 Cadastrar Novo Item</h3>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="grupo" class="required">Grupo</label>
+                            <input type="text" id="grupo" name="grupo" value="SERVIÇOS DE TERCEIROS - PESSOA JURÍDICA" disabled>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="itemApoiado">Item Apoiado</label>
+                            <select id="itemApoiado" name="itemApoiado">
+                                <option value="">Selecione...</option>
+                            </select>
+                            <span class="status-badge">$SALDOS</span>
+                        </div>
+                    </div>
+
+                    <div class="form-row full">
+                        <div class="form-group">
+                            <label for="detalhe" class="required">Detalhe</label>
+                            <textarea id="detalhe" name="detalhe" rows="3" required></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="unidade" class="required">Unidade</label>
+                            <select id="unidade" name="unidade" required>
+                                <option value="">Selecione...</option>
+                                <option value="un">UN - Unidade</option>
+                                <option value="mes">MÊS - Mês</option>
+                                <option value="hora">HORA - Hora</option>
+                                <option value="servico">SERVIÇO - Serviço</option>
+                                <option value="dia">DIA - Dia</option>
+                                <option value="kg">KG - Quilograma</option>
+                                <option value="litro">LITRO - Litro</option>
+                                <option value="metro">METRO - Metro</option>
+                                <option value="nova">➕ Adicionar Nova Unidade</option>
+                            </select>
+                            <input type="text" id="novaUnidade" name="novaUnidade" placeholder="Digite a nova unidade" style="display: none; margin-top: 8px;">
+                        </div>
+                    </div>
+
+                    <div class="form-row four-cols">
+                        <div class="form-group">
+                            <label for="quantidade">Quantidade</label>
+                            <input type="number" id="quantidade" name="quantidade" step="0.01">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="valorUnitario">Valor Unitário</label>
+                            <input type="number" id="valorUnitario" name="valorUnitario" step="0.01">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="valorTotal">Valor Total</label>
+                            <input type="number" id="valorTotal" name="valorTotal" step="0.01" disabled>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="valorLimite">Valor Limite</label>
+                            <input type="number" id="valorLimite" name="valorLimite" step="0.01">
+                        </div>
+                    </div>
+
+                    <div class="form-row full">
+                        <div class="form-group">
+                            <label for="qualificacaoMinima">Qualificação Mínima Exigida</label>
+                            <textarea id="qualificacaoMinima" name="qualificacaoMinima" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- 3.4. Pagamento e Execução -->
+                    <div style="margin-top: 25px; padding-top: 20px; border-top: 2px solid #ddd;">
+                        <h4 style="font-size: 15px; margin-bottom: 15px; color: #333;">3.4. Pagamento e Execução</h4>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Serviço de Engenharia e/ou Reforma</label>
+                                <div class="radio-group">
+                                    <div class="radio-option">
+                                        <input type="radio" id="engenhariaSimItem" name="engenhariaItem" value="sim">
+                                        <label for="engenhariaSimItem">Sim</label>
+                                    </div>
+                                    <div class="radio-option selected">
+                                        <input type="radio" id="engenhariaNaoItem" name="engenhariaItem" value="nao" checked>
+                                        <label for="engenhariaNaoItem">Não</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Natureza do Serviço</label>
+                                <div class="radio-group">
+                                    <div class="radio-option">
+                                        <input type="radio" id="naturezaTransferItem" name="naturezaServicoItem" value="transfer">
+                                        <label for="naturezaTransferItem">Transfer</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="naturezaInscricoesItem" name="naturezaServicoItem" value="inscricoes">
+                                        <label for="naturezaInscricoesItem">Inscrições</label>
+                                    </div>
+                                    <div class="radio-option selected">
+                                        <input type="radio" id="naturezaOutrosItem" name="naturezaServicoItem" value="outros" checked>
+                                        <label for="naturezaOutrosItem">Outros</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="prazoPagamento">Prazo Pagamento</label>
+                                <input type="text" id="prazoPagamento" name="prazoPagamento">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Forma de Pagamento</label>
+                                <div class="radio-group">
+                                    <div class="radio-option selected">
+                                        <input type="radio" id="pagamentoValorTotal" name="formaPagamento" value="valorTotal" checked>
+                                        <label for="pagamentoValorTotal">Valor Total por Produto/Serviço</label>
+                                    </div>
+                                    <div class="radio-option">
+                                        <input type="radio" id="pagamentoParcelado" name="formaPagamento" value="parcelado">
+                                        <label for="pagamentoParcelado">Valor parcelado por Produto/Serviço (Indicar forma de parcelamento)</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="numeroParcelas">Número de Parcelas</label>
+                                <input type="number" id="numeroParcelas" name="numeroParcelas">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="periodoExecucao">Período de Execução em dias corridos</label>
+                                <input type="text" id="periodoExecucao" name="periodoExecucao">
+                            </div>
+                        </div>
+
+                        <div class="form-row full">
+                            <div class="form-group">
+                                <label for="justificativaTecnica">Justificativa Técnica</label>
+                                <textarea id="justificativaTecnica" name="justificativaTecnica" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 20px; display: flex; gap: 10px;">
+                        <button type="button" class="include-btn" id="btnAdicionarItem">➕ Adicionar Item</button>
+                        <button type="button" class="btn btn-clear" id="btnLimparItem">🔄 Limpar Campos</button>
+                    </div>
+                </div>
+
+                <!-- Tabela de Itens Cadastrados -->
+                <div style="margin-top: 30px;">
+                    <h3 style="font-size: 16px; margin-bottom: 15px; color: #333;">📋 Itens Cadastrados</h3>
+                    
+                    <div id="itensContainer">
+                        <div class="no-items-message">
+                            Nenhum item cadastrado ainda. Preencha o formulário acima e clique em "Adicionar Item".
+                        </div>
+                    </div>
+
+                    <table class="items-table" id="tabelaItens" style="display: none;">
+                        <thead>
+                            <tr>
+                                <th style="width: 50px;">#</th>
+                                <th>Detalhe</th>
+                                <th>Unidade</th>
+                                <th style="width: 100px;">Qtd</th>
+                                <th style="width: 120px;">Valor Unit.</th>
+                                <th style="width: 120px;">Valor Total</th>
+                                <th style="width: 120px;">Valor Limite</th>
+                                <th style="width: 130px;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="corpoTabelaItens">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Seção 4: Fornecedores a Consultar -->
+            <div class="form-section">
+                <div class="section-header">
+                    <span class="icon">🏢</span>
+                    <h2>Fornecedores a Consultar</h2>
+                </div>
+
+                <div class="supplier-section">
+                    <div class="supplier-row">
+                        <div class="form-group">
+                            <label for="cnpj1">CNPJ/CPF</label>
+                            <input type="text" id="cnpj1" name="cnpj1">
+                        </div>
+                        <div class="form-group">
+                            <label for="razaoSocial1">Razão Social/Nome</label>
+                            <input type="text" id="razaoSocial1" name="razaoSocial1">
+                        </div>
+                        <div class="form-group">
+                            <label for="telefone1">Telefone</label>
+                            <input type="text" id="telefone1" name="telefone1">
+                        </div>
+                        <div class="form-group">
+                            <label for="email1">e-mail</label>
+                            <input type="text" id="email1" name="email1">
+                        </div>
+                        <div class="form-group">
+                            <label for="pessoaContato1">Pessoa de Contato</label>
+                            <input type="text" id="pessoaContato1" name="pessoaContato1">
+                        </div>
+                    </div>
+
+                    <div class="supplier-row">
+                        <div class="form-group">
+                            <label for="cnpj2">CNPJ/CPF</label>
+                            <input type="text" id="cnpj2" name="cnpj2">
+                        </div>
+                        <div class="form-group">
+                            <label for="razaoSocial2">Razão Social/Nome</label>
+                            <input type="text" id="razaoSocial2" name="razaoSocial2">
+                        </div>
+                        <div class="form-group">
+                            <label for="telefone2">Telefone</label>
+                            <input type="text" id="telefone2" name="telefone2">
+                        </div>
+                        <div class="form-group">
+                            <label for="email2">e-mail</label>
+                            <input type="text" id="email2" name="email2">
+                        </div>
+                        <div class="form-group">
+                            <label for="pessoaContato2">Pessoa de Contato</label>
+                            <input type="text" id="pessoaContato2" name="pessoaContato2">
+                        </div>
+                    </div>
+
+                    <div class="supplier-row">
+                        <div class="form-group">
+                            <label for="cnpj3">CNPJ/CPF</label>
+                            <input type="text" id="cnpj3" name="cnpj3">
+                        </div>
+                        <div class="form-group">
+                            <label for="razaoSocial3">Razão Social/Nome</label>
+                            <input type="text" id="razaoSocial3" name="razaoSocial3">
+                        </div>
+                        <div class="form-group">
+                            <label for="telefone3">Telefone</label>
+                            <input type="text" id="telefone3" name="telefone3">
+                        </div>
+                        <div class="form-group">
+                            <label for="email3">e-mail</label>
+                            <input type="text" id="email3" name="email3">
+                        </div>
+                        <div class="form-group">
+                            <label for="pessoaContato3">Pessoa de Contato</label>
+                            <input type="text" id="pessoaContato3" name="pessoaContato3">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Seção 5: Observação Final -->
+            <div class="form-section">
+                <div class="section-header">
+                    <span class="icon">💬</span>
+                    <h2>Observação</h2>
+                </div>
+
+                <div class="form-row full">
+                    <div class="form-group">
+                        <textarea id="observacaoFinal" name="observacaoFinal" rows="4"></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botões de Ação -->
+            <div class="button-group">
+                <button type="submit" class="btn btn-save">Salvar</button>
+                <button type="button" class="btn btn-save" id="btnGerarPDF" style="background-color: #d9534f;">📄 Gerar PDF</button>
+                <button type="button" class="btn btn-help">Ajuda</button>
+                <button type="button" class="btn btn-clear">Limpar</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Biblioteca jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
+    <script>
+        // Array para armazenar os itens cadastrados
+        let itensCadastrados = [];
+        let itemEditandoIndex = -1;
+        let unidadesPersonalizadas = [];
+
+        // Define data atual automaticamente
+        document.addEventListener('DOMContentLoaded', function() {
+            const hoje = new Date();
+            const dataFormatada = hoje.toISOString().split('T')[0];
+            document.getElementById('data').value = dataFormatada;
+
+            // Calcula valor total automaticamente
+            const quantidade = document.getElementById('quantidade');
+            const valorUnitario = document.getElementById('valorUnitario');
+            const valorTotal = document.getElementById('valorTotal');
+
+            function calcularTotal() {
+                const qtd = parseFloat(quantidade.value) || 0;
+                const vlrUnit = parseFloat(valorUnitario.value) || 0;
+                valorTotal.value = (qtd * vlrUnit).toFixed(2);
+            }
+
+            quantidade.addEventListener('input', calcularTotal);
+            valorUnitario.addEventListener('input', calcularTotal);
+
+            // Gerenciar campo de nova unidade
+            const selectUnidade = document.getElementById('unidade');
+            const inputNovaUnidade = document.getElementById('novaUnidade');
+            
+            selectUnidade.addEventListener('change', function() {
+                if (this.value === 'nova') {
+                    inputNovaUnidade.style.display = 'block';
+                    inputNovaUnidade.required = true;
+                    inputNovaUnidade.focus();
+                } else {
+                    inputNovaUnidade.style.display = 'none';
+                    inputNovaUnidade.required = false;
+                    inputNovaUnidade.value = '';
+                }
+            });
+
+            // Adicionar nova unidade ao select quando preenchida
+            inputNovaUnidade.addEventListener('blur', function() {
+                if (this.value.trim() !== '') {
+                    const novaUnidade = this.value.trim().toUpperCase();
+                    
+                    // Verifica se já existe
+                    const existente = Array.from(selectUnidade.options).find(
+                        opt => opt.text.toUpperCase().includes(novaUnidade)
+                    );
+                    
+                    if (!existente) {
+                        const option = document.createElement('option');
+                        option.value = novaUnidade.toLowerCase().replace(/\s+/g, '_');
+                        option.text = novaUnidade;
+                        selectUnidade.insertBefore(option, selectUnidade.options[selectUnidade.options.length - 1]);
+                        unidadesPersonalizadas.push({value: option.value, text: option.text});
+                    }
+                    
+                    // Seleciona a nova unidade
+                    selectUnidade.value = novaUnidade.toLowerCase().replace(/\s+/g, '_');
+                    inputNovaUnidade.style.display = 'none';
+                    inputNovaUnidade.value = '';
+                }
+            });
+
+            // Efeito visual nos radio buttons
+            const radioOptions = document.querySelectorAll('.radio-option');
+            radioOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    const radio = this.querySelector('input[type="radio"]');
+                    const name = radio.name;
+                    
+                    // Remove selected de todos do mesmo grupo
+                    document.querySelectorAll(`input[name="${name}"]`).forEach(r => {
+                        r.closest('.radio-option').classList.remove('selected');
+                    });
+                    
+                    // Adiciona selected no clicado
+                    this.classList.add('selected');
+                    radio.checked = true;
+                });
+            });
+
+            // Botão Adicionar Item
+            document.getElementById('btnAdicionarItem').addEventListener('click', adicionarItem);
+            
+            // Botão Limpar Item
+            document.getElementById('btnLimparItem').addEventListener('click', limparFormularioItem);
+
+            // Botão Gerar PDF
+            document.getElementById('btnGerarPDF').addEventListener('click', gerarPDF);
+
+            // Validação do formulário
+            document.getElementById('requisitionForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                if (itensCadastrados.length === 0) {
+                    alert('É necessário cadastrar pelo menos um item na requisição!');
+                    return;
+                }
+                
+                alert('Formulário enviado com sucesso com ' + itensCadastrados.length + ' item(ns)!');
+                console.log('Dados da requisição:', {
+                    dadosGerais: {
+                        projeto: document.getElementById('projeto').value,
+                        data: document.getElementById('data').value,
+                        limiteAtendimento: document.getElementById('limiteAtendimento').value,
+                        metasEtapas: document.getElementById('metasEtapas').value,
+                        localEntrega: document.getElementById('localEntrega').value,
+                        formaAvaliacao: document.querySelector('input[name="avaliacaoCotacao"]:checked').value,
+                        justificativa: document.getElementById('justificativaFinalidade').value
+                    },
+                    itens: itensCadastrados
+                });
+            });
+        });
+
+        function adicionarItem() {
+            // Validação básica
+            const detalhe = document.getElementById('detalhe').value;
+            const unidade = document.getElementById('unidade').value;
+
+            if (!detalhe || !unidade || unidade === 'nova') {
+                alert('Por favor, preencha os campos obrigatórios: Detalhe e Unidade');
+                return;
+            }
+
+            // Captura os dados do formulário
+            const unidadeSelect = document.getElementById('unidade');
+            const item = {
+                detalhe: document.getElementById('detalhe').value,
+                itemApoiado: document.getElementById('itemApoiado').value,
+                unidade: unidadeSelect.options[unidadeSelect.selectedIndex].text,
+                unidadeValue: document.getElementById('unidade').value,
+                quantidade: document.getElementById('quantidade').value || '0',
+                valorUnitario: document.getElementById('valorUnitario').value || '0',
+                valorTotal: document.getElementById('valorTotal').value || '0',
+                valorLimite: document.getElementById('valorLimite').value || '0',
+                qualificacaoMinima: document.getElementById('qualificacaoMinima').value,
+                engenhariaReforma: document.querySelector('input[name="engenhariaItem"]:checked').value,
+                naturezaServico: document.querySelector('input[name="naturezaServicoItem"]:checked').value,
+                prazoPagamento: document.getElementById('prazoPagamento').value,
+                formaPagamento: document.querySelector('input[name="formaPagamento"]:checked').value,
+                numeroParcelas: document.getElementById('numeroParcelas').value,
+                periodoExecucao: document.getElementById('periodoExecucao').value,
+                justificativaTecnica: document.getElementById('justificativaTecnica').value
+            };
+
+            if (itemEditandoIndex >= 0) {
+                // Atualizar item existente
+                itensCadastrados[itemEditandoIndex] = item;
+                itemEditandoIndex = -1;
+                document.getElementById('btnAdicionarItem').innerHTML = '➕ Adicionar Item';
+            } else {
+                // Adicionar novo item
+                itensCadastrados.push(item);
+            }
+
+            atualizarTabelaItens();
+            limparFormularioItem();
+            
+            // Atualiza contador de itens
+            document.getElementById('totalItens').value = itensCadastrados.length;
+        }
+
+        function atualizarTabelaItens() {
+            const container = document.getElementById('itensContainer');
+            const tabela = document.getElementById('tabelaItens');
+            const corpoTabela = document.getElementById('corpoTabelaItens');
+
+            if (itensCadastrados.length === 0) {
+                container.style.display = 'block';
+                tabela.style.display = 'none';
+                return;
+            }
+
+            container.style.display = 'none';
+            tabela.style.display = 'table';
+            corpoTabela.innerHTML = '';
+
+            itensCadastrados.forEach((item, index) => {
+                const linha = document.createElement('tr');
+                linha.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td>${item.detalhe.substring(0, 50)}${item.detalhe.length > 50 ? '...' : ''}</td>
+                    <td>${item.unidade}</td>
+                    <td style="text-align: right;">${parseFloat(item.quantidade).toFixed(2)}</td>
+                    <td style="text-align: right;">R$ ${parseFloat(item.valorUnitario).toFixed(2)}</td>
+                    <td style="text-align: right;">R$ ${parseFloat(item.valorTotal).toFixed(2)}</td>
+                    <td style="text-align: right;">R$ ${parseFloat(item.valorLimite).toFixed(2)}</td>
+                    <td>
+                        <button type="button" class="action-btn edit-btn" onclick="editarItem(${index})">✏️ Editar</button>
+                        <button type="button" class="action-btn delete-btn" onclick="excluirItem(${index})">🗑️ Excluir</button>
+                    </td>
+                `;
+                corpoTabela.appendChild(linha);
+            });
+        }
+
+        function editarItem(index) {
+            const item = itensCadastrados[index];
+            itemEditandoIndex = index;
+
+            // Preenche o formulário com os dados do item
+            document.getElementById('detalhe').value = item.detalhe;
+            document.getElementById('itemApoiado').value = item.itemApoiado;
+            document.getElementById('unidade').value = item.unidadeValue;
+            document.getElementById('quantidade').value = item.quantidade;
+            document.getElementById('valorUnitario').value = item.valorUnitario;
+            document.getElementById('valorTotal').value = item.valorTotal;
+            document.getElementById('valorLimite').value = item.valorLimite;
+            document.getElementById('qualificacaoMinima').value = item.qualificacaoMinima;
+            
+            // Radio buttons
+            document.querySelector(`input[name="engenhariaItem"][value="${item.engenhariaReforma}"]`).checked = true;
+            document.querySelector(`input[name="naturezaServicoItem"][value="${item.naturezaServico}"]`).checked = true;
+            document.querySelector(`input[name="formaPagamento"][value="${item.formaPagamento}"]`).checked = true;
+            
+            document.getElementById('prazoPagamento').value = item.prazoPagamento;
+            document.getElementById('numeroParcelas').value = item.numeroParcelas;
+            document.getElementById('periodoExecucao').value = item.periodoExecucao;
+            document.getElementById('justificativaTecnica').value = item.justificativaTecnica;
+
+            // Atualiza visual dos radio buttons
+            document.querySelectorAll('.radio-option').forEach(option => {
+                const radio = option.querySelector('input[type="radio"]');
+                if (radio.checked) {
+                    option.classList.add('selected');
+                } else {
+                    option.classList.remove('selected');
+                }
+            });
+
+            document.getElementById('btnAdicionarItem').innerHTML = '💾 Atualizar Item';
+            
+            // Scroll para o formulário
+            document.querySelector('.item-form-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function excluirItem(index) {
+            if (confirm('Deseja realmente excluir este item?')) {
+                itensCadastrados.splice(index, 1);
+                atualizarTabelaItens();
+                document.getElementById('totalItens').value = itensCadastrados.length;
+                
+                if (itemEditandoIndex === index) {
+                    limparFormularioItem();
+                    itemEditandoIndex = -1;
+                    document.getElementById('btnAdicionarItem').innerHTML = '➕ Adicionar Item';
+                }
+            }
+        }
+
+        function limparFormularioItem() {
+            document.getElementById('detalhe').value = '';
+            document.getElementById('itemApoiado').value = '';
+            document.getElementById('unidade').value = '';
+            document.getElementById('quantidade').value = '';
+            document.getElementById('valorUnitario').value = '';
+            document.getElementById('valorTotal').value = '';
+            document.getElementById('valorLimite').value = '';
+            document.getElementById('qualificacaoMinima').value = '';
+            document.getElementById('prazoPagamento').value = '';
+            document.getElementById('numeroParcelas').value = '';
+            document.getElementById('periodoExecucao').value = '';
+            document.getElementById('justificativaTecnica').value = '';
+            
+            // Reseta radio buttons para valores padrão
+            document.getElementById('engenhariaNaoItem').checked = true;
+            document.getElementById('naturezaOutrosItem').checked = true;
+            document.getElementById('pagamentoValorTotal').checked = true;
+            
+            // Atualiza visual dos radio buttons
+            document.querySelectorAll('.radio-option').forEach(option => {
+                const radio = option.querySelector('input[type="radio"]');
+                if (radio.checked) {
+                    option.classList.add('selected');
+                } else {
+                    option.classList.remove('selected');
+                }
+            });
+
+            itemEditandoIndex = -1;
+            document.getElementById('btnAdicionarItem').innerHTML = '➕ Adicionar Item';
+        }
+
+        function gerarPDF() {
+            if (itensCadastrados.length === 0) {
+                alert('É necessário cadastrar pelo menos um item para gerar o PDF!');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            let yPos = 20;
+
+            // Título
+            doc.setFontSize(16);
+            doc.setFont(undefined, 'bold');
+            doc.text('REQUISIÇÃO DE CONTRATAÇÃO DE SERVIÇOS', 105, yPos, { align: 'center' });
+            doc.text('PESSOA JURÍDICA', 105, yPos + 7, { align: 'center' });
+            
+            yPos += 20;
+
+            // Dados Gerais
+            doc.setFontSize(12);
+            doc.text('DADOS GERAIS', 14, yPos);
+            yPos += 8;
+
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+            
+            const projeto = document.getElementById('projeto').value;
+            const data = document.getElementById('data').value;
+            const limiteAtendimento = document.getElementById('limiteAtendimento').value || 'Não informado';
+            const metasEtapas = document.getElementById('metasEtapas').options[document.getElementById('metasEtapas').selectedIndex].text;
+            const localEntrega = document.getElementById('localEntrega').options[document.getElementById('localEntrega').selectedIndex].text;
+            const formaAvaliacao = document.querySelector('input[name="avaliacaoCotacao"]:checked')?.nextElementSibling?.textContent || 'Não informado';
+            const justificativa = document.getElementById('justificativaFinalidade').value;
+            const observacoes = document.getElementById('observacaoFinal').value;
+
+            doc.text(`Projeto: ${projeto}`, 14, yPos);
+            yPos += 6;
+            doc.text(`Data: ${new Date(data + 'T00:00:00').toLocaleDateString('pt-BR')}`, 14, yPos);
+            yPos += 6;
+            doc.text(`Limite de Atendimento: ${limiteAtendimento !== 'Não informado' ? new Date(limiteAtendimento + 'T00:00:00').toLocaleDateString('pt-BR') : limiteAtendimento}`, 14, yPos);
+            yPos += 6;
+            
+            // Meta/Etapa com quebra de linha
+            const metaLines = doc.splitTextToSize(`Meta/Etapa: ${metasEtapas}`, 180);
+            doc.text(metaLines, 14, yPos);
+            yPos += metaLines.length * 6;
+            
+            // Local de Entrega com quebra de linha
+            const localLines = doc.splitTextToSize(`Local de Entrega: ${localEntrega}`, 180);
+            doc.text(localLines, 14, yPos);
+            yPos += localLines.length * 6;
+            
+            doc.text(`Forma de Avaliação: ${formaAvaliacao}`, 14, yPos);
+            yPos += 8;
+
+            // Justificativa
+            doc.setFont(undefined, 'bold');
+            doc.text('Justificativa/Finalidade:', 14, yPos);
+            yPos += 6;
+            doc.setFont(undefined, 'normal');
+            const justLines = doc.splitTextToSize(justificativa, 180);
+            doc.text(justLines, 14, yPos);
+            yPos += justLines.length * 6 + 8;
+
+            // Verifica se precisa de nova página
+            if (yPos > 250) {
+                doc.addPage();
+                yPos = 20;
+            }
+
+            // Itens da Requisição
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('ITENS DA REQUISIÇÃO', 14, yPos);
+            yPos += 8;
+
+            // Tabela de itens
+            const tabelaItens = itensCadastrados.map((item, index) => [
+                (index + 1).toString(),
+                item.detalhe.substring(0, 60),
+                item.unidade,
+                parseFloat(item.quantidade).toFixed(2),
+                `R$ ${parseFloat(item.valorUnitario).toFixed(2)}`,
+                `R$ ${parseFloat(item.valorTotal).toFixed(2)}`
+            ]);
+
+            doc.autoTable({
+                startY: yPos,
+                head: [['#', 'Detalhe', 'Unidade', 'Qtd', 'Valor Unit.', 'Valor Total']],
+                body: tabelaItens,
+                theme: 'grid',
+                headStyles: { fillColor: [52, 152, 219], fontSize: 9 },
+                bodyStyles: { fontSize: 8 },
+                columnStyles: {
+                    0: { cellWidth: 10 },
+                    1: { cellWidth: 80 },
+                    2: { cellWidth: 25 },
+                    3: { cellWidth: 20, halign: 'right' },
+                    4: { cellWidth: 25, halign: 'right' },
+                    5: { cellWidth: 25, halign: 'right' }
+                }
+            });
+
+            yPos = doc.lastAutoTable.finalY + 10;
+
+            // Detalhes de cada item
+            doc.addPage();
+            yPos = 20;
+            doc.setFontSize(12);
+            doc.setFont(undefined, 'bold');
+            doc.text('DETALHAMENTO DOS ITENS', 14, yPos);
+            yPos += 10;
+
+            itensCadastrados.forEach((item, index) => {
+                doc.setFontSize(11);
+                doc.setFont(undefined, 'bold');
+                doc.text(`Item ${index + 1}`, 14, yPos);
+                yPos += 7;
+
+                doc.setFontSize(9);
+                doc.setFont(undefined, 'normal');
+                
+                const detalheLines = doc.splitTextToSize(`Detalhe: ${item.detalhe}`, 180);
+                doc.text(detalheLines, 14, yPos);
+                yPos += detalheLines.length * 5 + 3;
+
+                doc.text(`Unidade: ${item.unidade} | Quantidade: ${item.quantidade} | Valor Unit.: R$ ${parseFloat(item.valorUnitario).toFixed(2)}`, 14, yPos);
+                yPos += 5;
+                doc.text(`Valor Total: R$ ${parseFloat(item.valorTotal).toFixed(2)} | Valor Limite: R$ ${parseFloat(item.valorLimite).toFixed(2)}`, 14, yPos);
+                yPos += 5;
+
+                if (item.qualificacaoMinima) {
+                    const qualifLines = doc.splitTextToSize(`Qualificação Mínima: ${item.qualificacaoMinima}`, 180);
+                    doc.text(qualifLines, 14, yPos);
+                    yPos += qualifLines.length * 5;
+                }
+
+                doc.text(`Eng./Reforma: ${item.engenhariaReforma === 'sim' ? 'Sim' : 'Não'} | Natureza: ${item.naturezaServico}`, 14, yPos);
+                yPos += 5;
+                doc.text(`Prazo Pagamento: ${item.prazoPagamento || 'N/I'} | Forma Pagamento: ${item.formaPagamento === 'valorTotal' ? 'Valor Total' : 'Parcelado'}`, 14, yPos);
+                yPos += 5;
+
+                if (item.justificativaTecnica) {
+                    const justTecLines = doc.splitTextToSize(`Justificativa Técnica: ${item.justificativaTecnica}`, 180);
+                    doc.text(justTecLines, 14, yPos);
+                    yPos += justTecLines.length * 5;
+                }
+
+                yPos += 8;
+
+                // Nova página se necessário
+                if (yPos > 270) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+            });
+
+            // Observações finais
+            if (observacoes) {
+                if (yPos > 250) {
+                    doc.addPage();
+                    yPos = 20;
+                }
+                doc.setFontSize(11);
+                doc.setFont(undefined, 'bold');
+                doc.text('OBSERVAÇÕES', 14, yPos);
+                yPos += 7;
+                doc.setFontSize(9);
+                doc.setFont(undefined, 'normal');
+                const obsLines = doc.splitTextToSize(observacoes, 180);
+                doc.text(obsLines, 14, yPos);
+            }
+
+            // Salvar PDF
+            const nomeArquivo = `Requisicao_${data.replace(/-/g, '')}.pdf`;
+            doc.save(nomeArquivo);
+        }
+    </script>
+</body>
+</html>

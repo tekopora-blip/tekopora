@@ -1,0 +1,884 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Requisições - Projeto Teko Porã</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo h1 {
+            color: #667eea;
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        .logo p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .error-message {
+            background-color: #fee;
+            color: #c33;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .success-message {
+            background-color: #efe;
+            color: #3c3;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            display: none;
+        }
+
+        .info-text {
+            text-align: center;
+            color: #666;
+            font-size: 12px;
+            margin-top: 20px;
+        }
+
+        /* Tela Principal */
+        .main-container {
+            display: none;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 1400px;
+            max-height: 90vh;
+            overflow: hidden;
+        }
+
+        .header-bar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-bar h2 {
+            font-size: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .user-email {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .btn-logout {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+        }
+
+        .btn-logout:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .menu-tabs {
+            display: flex;
+            background: #f5f5f5;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .menu-tab {
+            padding: 15px 30px;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 14px;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+
+        .menu-tab:hover {
+            background: #e8e8e8;
+        }
+
+        .menu-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            background: white;
+        }
+
+        .content-area {
+            padding: 30px;
+            overflow-y: auto;
+            max-height: calc(90vh - 140px);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        table th,
+        table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 13px;
+        }
+
+        table th {
+            background-color: #f5f5f5;
+            font-weight: 600;
+            color: #333;
+        }
+
+        table tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background-color: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #5568d3;
+        }
+
+        .btn-success {
+            background-color: #5cb85c;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #4cae4c;
+        }
+
+        .btn-danger {
+            background-color: #d9534f;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c9302c;
+        }
+
+        .btn-warning {
+            background-color: #f89406;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background-color: #d67d05;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .badge-draft {
+            background-color: #ffeaa7;
+            color: #856404;
+        }
+
+        .badge-pending {
+            background-color: #74b9ff;
+            color: #004085;
+        }
+
+        .badge-approved {
+            background-color: #55efc4;
+            color: #155724;
+        }
+
+        .badge-rejected {
+            background-color: #ff7675;
+            color: #721c24;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .form-inline {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            margin-bottom: 20px;
+        }
+
+        .form-inline .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        .saldo-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            margin-bottom: 15px;
+        }
+
+        .saldo-label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .saldo-valor {
+            font-size: 18px;
+            font-weight: 700;
+            color: #5cb85c;
+        }
+
+        .saldo-valor.negativo {
+            color: #d9534f;
+        }
+
+        .admin-badge {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Tela de Login -->
+    <div class="login-container" id="loginScreen">
+        <div class="logo">
+            <h1>🌿 Sistema Teko Porã</h1>
+            <p>Gestão de Requisições</p>
+        </div>
+
+        <div class="error-message" id="loginError"></div>
+        <div class="success-message" id="loginSuccess"></div>
+
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">E-mail @ifms.edu.br</label>
+                <input type="email" id="email" name="email" placeholder="seu.email@ifms.edu.br" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Senha</label>
+                <input type="password" id="password" name="password" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn-login">Entrar</button>
+
+            <p class="info-text">
+                Acesso restrito apenas para e-mails @ifms.edu.br
+            </p>
+        </form>
+    </div>
+
+    <!-- Tela Principal do Sistema -->
+    <div class="main-container" id="mainScreen">
+        <div class="header-bar">
+            <h2>Sistema de Requisições - Projeto Teko Porã</h2>
+            <div class="user-info">
+                <span class="user-email" id="userEmail"></span>
+                <span class="admin-badge" id="adminBadge" style="display: none;">ADMIN</span>
+                <button class="btn-logout" onclick="logout()">Sair</button>
+            </div>
+        </div>
+
+        <div class="menu-tabs">
+            <button class="menu-tab active" onclick="showTab('requisicoes')">Minhas Requisições</button>
+            <button class="menu-tab" onclick="showTab('nova')">Nova Requisição</button>
+            <button class="menu-tab" id="tabAprovacao" style="display: none;" onclick="showTab('aprovacao')">Aprovações</button>
+            <button class="menu-tab" id="tabRubricas" style="display: none;" onclick="showTab('rubricas')">Gerenciar Rubricas</button>
+        </div>
+
+        <div class="content-area">
+            <!-- Aba: Minhas Requisições -->
+            <div id="tab-requisicoes" class="tab-content active">
+                <div class="card">
+                    <div class="card-title">📋 Minhas Requisições</div>
+                    <div id="listaRequisicoes">
+                        <div class="empty-state">
+                            <i>📭</i>
+                            <p>Você ainda não possui requisições cadastradas.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aba: Nova Requisição -->
+            <div id="tab-nova" class="tab-content">
+                <div class="card">
+                    <div class="card-title">✨ Nova Requisição</div>
+                    <iframe src="formulario_requisicao.html" style="width: 100%; height: 70vh; border: none; border-radius: 6px;"></iframe>
+                </div>
+            </div>
+
+            <!-- Aba: Aprovações (Admin) -->
+            <div id="tab-aprovacao" class="tab-content">
+                <div class="card">
+                    <div class="card-title">✅ Requisições Pendentes de Aprovação</div>
+                    <div id="listaAprovacoes">
+                        <div class="empty-state">
+                            <i>✔️</i>
+                            <p>Não há requisições pendentes de aprovação.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aba: Gerenciar Rubricas (Admin) -->
+            <div id="tab-rubricas" class="tab-content">
+                <div class="card">
+                    <div class="card-title">💰 Gerenciamento de Rubricas e Saldos</div>
+                    
+                    <div class="form-inline">
+                        <div class="form-group">
+                            <label>Rubrica</label>
+                            <select id="rubricaSelect">
+                                <option value="">Selecione uma rubrica...</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Saldo (R$)</label>
+                            <input type="number" id="saldoInput" step="0.01" placeholder="0,00">
+                        </div>
+                        <button class="btn btn-success" onclick="atualizarSaldo()">Atualizar Saldo</button>
+                    </div>
+
+                    <table id="tabelaRubricas">
+                        <thead>
+                            <tr>
+                                <th>Rubrica</th>
+                                <th>Descrição</th>
+                                <th>Saldo Disponível</th>
+                                <th>Utilizado</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="corpotabelaRubricas">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Simula banco de dados local (localStorage)
+        const DB = {
+            users: JSON.parse(localStorage.getItem('users') || '{}'),
+            requisicoes: JSON.parse(localStorage.getItem('requisicoes') || '[]'),
+            rubricas: JSON.parse(localStorage.getItem('rubricas') || '{}'),
+            currentUser: null
+        };
+
+        // Dados das rubricas
+        const RUBRICAS_DATA = [
+            { rubrica: "33.90.18", descricao: "BOLSA", item: "Bolsa Estágio I" },
+            { rubrica: "33.90.18", descricao: "BOLSA", item: "Bolsa Estágio II" },
+            { rubrica: "33.90.18", descricao: "BOLSA", item: "Bolsa Analista" },
+            { rubrica: "33.90.18", descricao: "BOLSA", item: "Esudantes de Nível Médio" },
+            { rubrica: "33.90.18", descricao: "BOLSA", item: "Estudantes de Nível Superior" },
+            { rubrica: "33.90.39", descricao: "OUTROS SERVIÇOS DE TERCEIROS PESSOA JURÍDICA", item: "Custos Incorridos" },
+            { rubrica: "33.90.39", descricao: "OUTROS SERVIÇOS DE TERCEIROS PESSOA JURÍDICA", item: "Despesa Orçamentária e Administrativa" },
+            { rubrica: "33.90.39", descricao: "OUTROS SERVIÇOS DE TERCEIROS PESSOA JURÍDICA", item: "Outros correlatos" },
+            { rubrica: "33.90.39", descricao: "OUTROS SERVIÇOS DE TERCEIROS PESSOA JURÍDICA", item: "Evento" },
+            { rubrica: "33.90.39", descricao: "OUTROS SERVIÇOS DE TERCEIROS PESSOA JURÍDICA", item: "Aluguel de veículos" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Analista" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Coordenador Geral" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Analista Indígena" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Engenheiro Ambiental ou Geógrafo" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Intérpretes Guarani" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Escritor Guarani" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Revisor de textos" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Facilitadores Comunitários" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Psicólogo" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Sociólogo" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Técnico em Audiovisual" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Engenheiro Agrônomo/Zootecnista" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Economista" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Representantes do ITM" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Advogado indígena" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Professor(a) Especializado em Educação Prisional" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Bolsistas Indígenas" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Mediador de Conflitos Comunitário" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Educador(a) Comunitário" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Assistente Administrativo" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Engenheiro Civil" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Engenheiro Eletricista" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Arquiteto" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Agrônomo" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Jornalista/Documentarista" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Tradutores para Língua Terena" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Técnico em eletrotécnica" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Técnico em Pisicultura" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Técnico em Informática" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Revisor de texto e tradutor: Português, Inglês, Espanhol e Guarani" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Coordenador" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Supervisão Geral" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Apoio Administrativo" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Antropólogos" },
+            { rubrica: "33.90.14", descricao: "DIÁRIAS", item: "Diária" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "Drones com Câmeras de Alta Resolução" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "GPS Geodésico" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "Estações Totais" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "Trenas Eletrônicas" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "Computadores" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "Projetores e Telas de Projeção Portáteis" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "Equipamento de áudios" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "Veículo para o Projeto" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "Equipamentos de Segurança Individual (EPIs)" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "Equipamento de filmagem e gravação audiovisual (câmeras, microfones)" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "Equipamentos de informática (computadores para edição de vídeos e documentos)" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "Equipamentos de projeção (projetor e tela)" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "Máquinas de Costura" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "Equipamentos para Marcenaria (serras, plaínas)" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "Kits de Ferramentas Agrícolas" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "Câmeras de Segurança com Visão Noturna" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "Gravador de Vídeo Digital (DVR)" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "Kits de Energia Solar para Alimentação dos Equipamentos" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "Monitores LED para Visualização e Controle" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "Terminais de Internet via Satélite com Alimentação Solar" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "Bomba de água submersa 220V 3.000 Litros/h" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "Soprador de ar JKW 014" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "Placa solar 550W" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "Bateria estacionária" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "Inversor 5000W" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "Aparelho Celular com Câmera de Alta Resolução para Gravação e Fotografia" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "Notebook para Edição e Armazenamento" },
+            { rubrica: "33.90.30", descricao: "MATERIAL DE CONSUMO", item: "Outros materiais de consumo" },
+            { rubrica: "33.90.30", descricao: "MATERIAL DE CONSUMO", item: "Combustível" },
+            { rubrica: "33.90.33", descricao: "PASSAGENS E DESPESAS COM LOCOMOÇÃO", item: "Passagens" },
+            { rubrica: "33.00.36", descricao: "OUTROS SERVIÇOS DE TERCEIROS PESSOA FÍSICA", item: "Serviços eventuais" },
+            { rubrica: "33.90.47", descricao: "OBRIGAÇÕES TRIBUTÁRIAS E CONTRIBUTIVAS", item: "Obrigações tributárias" }
+        ];
+
+        // Inicializar rubricas se não existirem
+        if (Object.keys(DB.rubricas).length === 0) {
+            RUBRICAS_DATA.forEach(r => {
+                const key = `${r.rubrica}|${r.item}`;
+                if (!DB.rubricas[key]) {
+                    DB.rubricas[key] = {
+                        rubrica: r.rubrica,
+                        descricao: r.descricao,
+                        item: r.item,
+                        saldoTotal: 0,
+                        saldoUtilizado: 0,
+                        saldoDisponivel: 0
+                    };
+                }
+            });
+            localStorage.setItem('rubricas', JSON.stringify(DB.rubricas));
+        }
+
+        // Login
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value.toLowerCase();
+            const password = document.getElementById('password').value;
+
+            // Valida domínio
+            if (!email.endsWith('@ifms.edu.br')) {
+                showMessage('loginError', 'Acesso permitido apenas para e-mails @ifms.edu.br');
+                return;
+            }
+
+            // Simula autenticação
+            if (!DB.users[email]) {
+                // Cria novo usuário na primeira vez
+                DB.users[email] = {
+                    email: email,
+                    password: password,
+                    isAdmin: email === 'teko.pora@ifms.edu.br',
+                    createdAt: new Date().toISOString()
+                };
+                localStorage.setItem('users', JSON.stringify(DB.users));
+                showMessage('loginSuccess', 'Usuário criado com sucesso! Entrando...');
+            } else if (DB.users[email].password !== password) {
+                showMessage('loginError', 'Senha incorreta');
+                return;
+            }
+
+            // Login bem-sucedido
+            DB.currentUser = DB.users[email];
+            localStorage.setItem('currentUser', email);
+            
+            setTimeout(() => {
+                showMainScreen();
+            }, 500);
+        });
+
+        function showMessage(elementId, message) {
+            const el = document.getElementById(elementId);
+            el.textContent = message;
+            el.style.display = 'block';
+            
+            setTimeout(() => {
+                el.style.display = 'none';
+            }, 5000);
+        }
+
+        function showMainScreen() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('mainScreen').style.display = 'block';
+            
+            document.getElementById('userEmail').textContent = DB.currentUser.email;
+            
+            // Mostra abas admin
+            if (DB.currentUser.isAdmin) {
+                document.getElementById('adminBadge').style.display = 'inline-block';
+                document.getElementById('tabAprovacao').style.display = 'block';
+                document.getElementById('tabRubricas').style.display = 'block';
+                carregarRubricas();
+            }
+            
+            carregarMinhasRequisicoes();
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            DB.currentUser = null;
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('mainScreen').style.display = 'none';
+            document.getElementById('loginForm').reset();
+        }
+
+        function showTab(tabName) {
+            // Remove active de todas as abas
+            document.querySelectorAll('.menu-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            // Ativa a aba selecionada
+            event.target.classList.add('active');
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            
+            // Carrega dados específicos da aba
+            if (tabName === 'requisicoes') {
+                carregarMinhasRequisicoes();
+            } else if (tabName === 'aprovacao') {
+                carregarAprovacoes();
+            } else if (tabName === 'rubricas') {
+                carregarRubricas();
+            }
+        }
+
+        function carregarMinhasRequisicoes() {
+            const minhas = DB.requisicoes.filter(r => r.usuario === DB.currentUser.email);
+            const container = document.getElementById('listaRequisicoes');
+            
+            if (minhas.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i>📭</i>
+                        <p>Você ainda não possui requisições cadastradas.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<table><thead><tr><th>ID</th><th>Data</th><th>Projeto</th><th>Itens</th><th>Status</th><th>Ações</th></tr></thead><tbody>';
+            
+            minhas.forEach(req => {
+                const statusClass = req.status === 'rascunho' ? 'draft' : 
+                                   req.status === 'pendente' ? 'pending' :
+                                   req.status === 'aprovado' ? 'approved' : 'rejected';
+                
+                html += `
+                    <tr>
+                        <td>#${req.id}</td>
+                        <td>${new Date(req.data).toLocaleDateString('pt-BR')}</td>
+                        <td>${req.projeto}</td>
+                        <td>${req.itens.length} item(ns)</td>
+                        <td><span class="badge badge-${statusClass}">${req.status.toUpperCase()}</span></td>
+                        <td>
+                            <button class="btn btn-primary" onclick="visualizarRequisicao(${req.id})">Ver</button>
+                            ${req.status === 'rascunho' ? `<button class="btn btn-warning" onclick="editarRequisicao(${req.id})">Editar</button>` : ''}
+                            ${req.status === 'rejeitado' ? `<button class="btn btn-warning" onclick="editarRequisicao(${req.id})">Corrigir</button>` : ''}
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function carregarAprovacoes() {
+            const pendentes = DB.requisicoes.filter(r => r.status === 'pendente');
+            const container = document.getElementById('listaAprovacoes');
+            
+            if (pendentes.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i>✔️</i>
+                        <p>Não há requisições pendentes de aprovação.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = '<table><thead><tr><th>ID</th><th>Usuário</th><th>Data</th><th>Projeto</th><th>Itens</th><th>Ações</th></tr></thead><tbody>';
+            
+            pendentes.forEach(req => {
+                html += `
+                    <tr>
+                        <td>#${req.id}</td>
+                        <td>${req.usuario}</td>
+                        <td>${new Date(req.data).toLocaleDateString('pt-BR')}</td>
+                        <td>${req.projeto}</td>
+                        <td>${req.itens.length} item(ns)</td>
+                        <td>
+                            <button class="btn btn-primary" onclick="visualizarRequisicao(${req.id})">Ver</button>
+                            <button class="btn btn-success" onclick="aprovarRequisicao(${req.id})">Aprovar</button>
+                            <button class="btn btn-danger" onclick="rejeitarRequisicao(${req.id})">Devolver</button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        function carregarRubricas() {
+            const select = document.getElementById('rubricaSelect');
+            select.innerHTML = '<option value="">Selecione uma rubrica...</option>';
+            
+            Object.values(DB.rubricas).forEach(rub => {
+                const option = document.createElement('option');
+                option.value = `${rub.rubrica}|${rub.item}`;
+                option.text = `${rub.rubrica} - ${rub.descricao} - ${rub.item}`;
+                select.appendChild(option);
+            });
+
+            const tbody = document.getElementById('corpoTabelaRubricas');
+            tbody.innerHTML = '';
+
+            Object.values(DB.rubricas).forEach(rub => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td>${rub.rubrica}</td>
+                    <td>${rub.descricao} - ${rub.item}</td>
+                    <td style="text-align: right; font-weight: 600; color: ${rub.saldoDisponivel < 0 ? '#d9534f' : '#5cb85c'}">R$ ${rub.saldoDisponivel.toFixed(2)}</td>
+                    <td style="text-align: right;">R$ ${rub.saldoUtilizado.toFixed(2)}</td>
+                    <td style="text-align: right; font-weight: 600;">R$ ${rub.saldoTotal.toFixed(2)}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function atualizarSaldo() {
+            const key = document.getElementById('rubricaSelect').value;
+            const saldo = parseFloat(document.getElementById('saldoInput').value);
+            
+            if (!key || isNaN(saldo)) {
+                alert('Selecione uma rubrica e informe um valor válido');
+                return;
+            }
+
+            DB.rubricas[key].saldoTotal = saldo;
+            DB.rubricas[key].saldoDisponivel = saldo - DB.rubricas[key].saldoUtilizado;
+            
+            localStorage.setItem('rubricas', JSON.stringify(DB.rubricas));
+            
+            carregarRubricas();
+            document.getElementById('rubricaSelect').value = '';
+            document.getElementById('saldoInput').value = '';
+            
+            alert('Saldo atualizado com sucesso!');
+        }
+
+        function visualizarRequisicao(id) {
+            const req = DB.requisicoes.find(r => r.id === id);
+            alert(`Visualizando requisição #${id}\n\nEsta funcionalidade abrirá uma modal com os detalhes completos.`);
+        }
+
+        function editarRequisicao(id) {
+            alert(`Editando requisição #${id}\n\nEsta funcionalidade carregará o formulário com os dados para edição.`);
+        }
+
+        function aprovarRequisicao(id) {
+            if (confirm('Deseja aprovar esta requisição?')) {
+                const req = DB.requisicoes.find(r => r.id === id);
+                req.status = 'aprovado';
+                req.aprovadoPor = DB.currentUser.email;
+                req.dataAprovacao = new Date().toISOString();
+                
+                localStorage.setItem('requisicoes', JSON.stringify(DB.requisicoes));
+                carregarAprovacoes();
+                alert('Requisição aprovada com sucesso!');
+            }
+        }
+
+        function rejeitarRequisicao(id) {
+            const motivo = prompt('Informe o motivo da devolução para correção:');
+            if (motivo) {
+                const req = DB.requisicoes.find(r => r.id === id);
+                req.status = 'rejeitado';
+                req.motivoRejeicao = motivo;
+                req.rejeitadoPor = DB.currentUser.email;
+                req.dataRejeicao = new Date().toISOString();
+                
+                localStorage.setItem('requisicoes', JSON.stringify(DB.requisicoes));
+                carregarAprovacoes();
+                alert('Requisição devolvida para correção.');
+            }
+        }
+
+        // Verifica se há usuário logado ao carregar
+        window.onload = function() {
+            const savedUser = localStorage.getItem('currentUser');
+            if (savedUser && DB.users[savedUser]) {
+                DB.currentUser = DB.users[savedUser];
+                showMainScreen();
+            }
+        };
+    </script>
+</body>
+</html>
