@@ -479,15 +479,15 @@
                     <div class="form-inline">
                         <div class="form-group">
                             <label>Rubrica</label>
-                            <select id="rubricaSelect">
+                            <select id="rubricaSelect" style="width: 100%;">
                                 <option value="">Selecione uma rubrica...</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Saldo (R$)</label>
-                            <input type="number" id="saldoInput" step="0.01" placeholder="0,00">
+                            <label>Saldo Total (R$)</label>
+                            <input type="number" id="saldoInput" step="0.01" placeholder="0,00" min="0">
                         </div>
-                        <button class="btn btn-success" onclick="atualizarSaldo()">Atualizar Saldo</button>
+                        <button type="button" class="btn btn-success" onclick="atualizarSaldo()">💾 Atualizar Saldo</button>
                     </div>
 
                     <table id="tabelaRubricas">
@@ -787,51 +787,141 @@
         }
 
         function carregarRubricas() {
+            console.log('Carregando rubricas...');
+            console.log('Total de rubricas:', Object.keys(DB.rubricas).length);
+            
             const select = document.getElementById('rubricaSelect');
+            if (!select) {
+                console.error('Select de rubricas não encontrado!');
+                return;
+            }
+            
             select.innerHTML = '<option value="">Selecione uma rubrica...</option>';
             
+            // Agrupa rubricas por código para melhor visualização
+            const rubricasAgrupadas = {};
+            
             Object.values(DB.rubricas).forEach(rub => {
-                const option = document.createElement('option');
-                option.value = `${rub.rubrica}|${rub.item}`;
-                option.text = `${rub.rubrica} - ${rub.descricao} - ${rub.item}`;
-                select.appendChild(option);
+                if (!rubricasAgrupadas[rub.rubrica]) {
+                    rubricasAgrupadas[rub.rubrica] = [];
+                }
+                rubricasAgrupadas[rub.rubrica].push(rub);
+            });
+            
+            // Ordena e adiciona as options
+            Object.keys(rubricasAgrupadas).sort().forEach(codRubrica => {
+                rubricasAgrupadas[codRubrica].forEach(rub => {
+                    const option = document.createElement('option');
+                    option.value = `${rub.rubrica}|${rub.item}`;
+                    option.text = `${rub.rubrica} - ${rub.descricao} - ${rub.item}`;
+                    select.appendChild(option);
+                });
             });
 
+            console.log('Select populado com', select.options.length - 1, 'rubricas');
+
             const tbody = document.getElementById('corpoTabelaRubricas');
+            if (!tbody) {
+                console.error('Tbody da tabela não encontrado!');
+                return;
+            }
+            
             tbody.innerHTML = '';
 
-            Object.values(DB.rubricas).forEach(rub => {
+            // Ordena rubricas por código
+            const rubricasOrdenadas = Object.values(DB.rubricas).sort((a, b) => {
+                if (a.rubrica !== b.rubrica) {
+                    return a.rubrica.localeCompare(b.rubrica);
+                }
+                return a.item.localeCompare(b.item);
+            });
+
+            rubricasOrdenadas.forEach(rub => {
                 const tr = document.createElement('tr');
+                const saldoDisp = rub.saldoDisponivel || 0;
+                const saldoUtil = rub.saldoUtilizado || 0;
+                const saldoTotal = rub.saldoTotal || 0;
+                
                 tr.innerHTML = `
-                    <td>${rub.rubrica}</td>
-                    <td>${rub.descricao} - ${rub.item}</td>
-                    <td style="text-align: right; font-weight: 600; color: ${rub.saldoDisponivel < 0 ? '#d9534f' : '#5cb85c'}">R$ ${rub.saldoDisponivel.toFixed(2)}</td>
-                    <td style="text-align: right;">R$ ${rub.saldoUtilizado.toFixed(2)}</td>
-                    <td style="text-align: right; font-weight: 600;">R$ ${rub.saldoTotal.toFixed(2)}</td>
+                    <td style="font-weight: 600;">${rub.rubrica}</td>
+                    <td>${rub.descricao} - <strong>${rub.item}</strong></td>
+                    <td style="text-align: right; font-weight: 600; color: ${saldoDisp < 0 ? '#d9534f' : '#5cb85c'}">
+                        R$ ${saldoDisp.toFixed(2)}
+                    </td>
+                    <td style="text-align: right; color: #666;">R$ ${saldoUtil.toFixed(2)}</td>
+                    <td style="text-align: right; font-weight: 600; color: #333;">R$ ${saldoTotal.toFixed(2)}</td>
                 `;
                 tbody.appendChild(tr);
             });
+            
+            console.log('Tabela atualizada com', rubricasOrdenadas.length, 'linhas');
         }
 
         function atualizarSaldo() {
-            const key = document.getElementById('rubricaSelect').value;
-            const saldo = parseFloat(document.getElementById('saldoInput').value);
+            console.log('Função atualizarSaldo chamada');
             
-            if (!key || isNaN(saldo)) {
-                alert('Selecione uma rubrica e informe um valor válido');
+            const selectElement = document.getElementById('rubricaSelect');
+            const inputElement = document.getElementById('saldoInput');
+            
+            console.log('Select Element:', selectElement);
+            console.log('Input Element:', inputElement);
+            
+            const key = selectElement ? selectElement.value : '';
+            const saldoInput = inputElement ? inputElement.value : '';
+            
+            console.log('Key selecionada:', key);
+            console.log('Saldo digitado:', saldoInput);
+            
+            if (!key) {
+                alert('Por favor, selecione uma rubrica');
+                return;
+            }
+            
+            if (!saldoInput || saldoInput.trim() === '') {
+                alert('Por favor, informe um valor de saldo');
+                return;
+            }
+            
+            const saldo = parseFloat(saldoInput);
+            
+            console.log('Saldo parseado:', saldo);
+            
+            if (isNaN(saldo)) {
+                alert('Por favor, informe um valor numérico válido');
                 return;
             }
 
+            if (!DB.rubricas[key]) {
+                alert('Rubrica não encontrada no sistema');
+                console.log('Rubricas disponíveis:', Object.keys(DB.rubricas));
+                return;
+            }
+
+            console.log('Rubrica antes da atualização:', DB.rubricas[key]);
+
+            // Atualiza os valores
             DB.rubricas[key].saldoTotal = saldo;
+            DB.rubricas[key].saldoUtilizado = DB.rubricas[key].saldoUtilizado || 0;
             DB.rubricas[key].saldoDisponivel = saldo - DB.rubricas[key].saldoUtilizado;
             
-            localStorage.setItem('rubricas', JSON.stringify(DB.rubricas));
+            console.log('Rubrica depois da atualização:', DB.rubricas[key]);
             
+            // Salva no localStorage
+            localStorage.setItem('rubricas', JSON.stringify(DB.rubricas));
+            console.log('Dados salvos no localStorage');
+            
+            // Recarrega a tabela
             carregarRubricas();
+            console.log('Tabela recarregada');
+            
+            // Limpa os campos
             document.getElementById('rubricaSelect').value = '';
             document.getElementById('saldoInput').value = '';
             
-            alert('Saldo atualizado com sucesso!');
+            alert('✅ Saldo atualizado com sucesso!\n\n' + 
+                  'Rubrica: ' + DB.rubricas[key].rubrica + '\n' +
+                  'Item: ' + DB.rubricas[key].item + '\n' +
+                  'Saldo Total: R$ ' + saldo.toFixed(2));
         }
 
         function visualizarRequisicao(id) {
