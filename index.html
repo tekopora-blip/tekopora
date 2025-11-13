@@ -513,7 +513,7 @@
         const DB = {
             users: JSON.parse(localStorage.getItem('users') || '{}'),
             requisicoes: JSON.parse(localStorage.getItem('requisicoes') || '[]'),
-            rubricas: JSON.parse(localStorage.getItem('rubricas') || '{}'),
+            rubricas: {},
             currentUser: null
         };
 
@@ -598,11 +598,28 @@
             { rubrica: "33.90.47", descricao: "OBRIGAÇÕES TRIBUTÁRIAS E CONTRIBUTIVAS", item: "Obrigações tributárias" }
         ];
 
-        // Inicializar rubricas se não existirem
-        if (Object.keys(DB.rubricas).length === 0) {
-            RUBRICAS_DATA.forEach(r => {
-                const key = `${r.rubrica}|${r.item}`;
-                if (!DB.rubricas[key]) {
+        // Função para inicializar rubricas
+        function inicializarRubricas() {
+            console.log('Inicializando rubricas...');
+            
+            // Tenta carregar do localStorage
+            const rubricasSalvas = localStorage.getItem('rubricas');
+            
+            if (rubricasSalvas) {
+                try {
+                    DB.rubricas = JSON.parse(rubricasSalvas);
+                    console.log('Rubricas carregadas do localStorage:', Object.keys(DB.rubricas).length);
+                } catch (e) {
+                    console.error('Erro ao carregar rubricas do localStorage:', e);
+                    DB.rubricas = {};
+                }
+            }
+            
+            // Se não houver rubricas, cria do zero
+            if (Object.keys(DB.rubricas).length === 0) {
+                console.log('Criando rubricas pela primeira vez...');
+                RUBRICAS_DATA.forEach(r => {
+                    const key = `${r.rubrica}|${r.item}`;
                     DB.rubricas[key] = {
                         rubrica: r.rubrica,
                         descricao: r.descricao,
@@ -611,10 +628,16 @@
                         saldoUtilizado: 0,
                         saldoDisponivel: 0
                     };
-                }
-            });
-            localStorage.setItem('rubricas', JSON.stringify(DB.rubricas));
+                });
+                localStorage.setItem('rubricas', JSON.stringify(DB.rubricas));
+                console.log('Rubricas criadas e salvas:', Object.keys(DB.rubricas).length);
+            }
+            
+            console.log('Total de rubricas disponíveis:', Object.keys(DB.rubricas).length);
         }
+
+        // Inicializar rubricas imediatamente
+        inicializarRubricas();
 
         // Login
         document.getElementById('loginForm').addEventListener('submit', function(e) {
