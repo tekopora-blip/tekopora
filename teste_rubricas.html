@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste Rubricas</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .btn {
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .info-box {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Teste de Rubricas - Sistema Teko Porã</h1>
+    
+    <div class="info-box" id="infoBox">
+        Carregando informações...
+    </div>
+    
+    <button class="btn" onclick="inicializar()">🔄 Inicializar Rubricas</button>
+    <button class="btn" onclick="mostrarRubricas()">📋 Mostrar Rubricas</button>
+    <button class="btn" onclick="limparStorage()">🗑️ Limpar LocalStorage</button>
+    <button class="btn" onclick="testarAtualizacao()">💾 Testar Atualização</button>
+    
+    <div id="resultado"></div>
+    
+    <script>
+        const RUBRICAS_DATA = [
+            { rubrica: "33.90.18", descricao: "BOLSA", item: "Bolsa Estágio I" },
+            { rubrica: "33.90.18", descricao: "BOLSA", item: "Bolsa Estágio II" },
+            { rubrica: "33.90.18", descricao: "BOLSA", item: "Bolsa Analista" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Analista" },
+            { rubrica: "33.90.20", descricao: "BOLSAS PESQUISADOR", item: "Coordenador Geral" },
+            { rubrica: "44.90.52", descricao: "EQUIPAMENTOS E MATERIAL PERMANENTE", item: "Computadores" }
+        ];
+
+        let DB = { rubricas: {} };
+
+        function atualizarInfo() {
+            const totalRubricas = Object.keys(DB.rubricas).length;
+            const temLocalStorage = localStorage.getItem('rubricas') ? 'Sim' : 'Não';
+            const tamanhoLS = localStorage.getItem('rubricas')?.length || 0;
+            
+            document.getElementById('infoBox').innerHTML = `
+                <strong>Status do Sistema:</strong><br>
+                📊 Rubricas no DB: ${totalRubricas}<br>
+                💾 localStorage existe: ${temLocalStorage}<br>
+                📏 Tamanho do localStorage: ${tamanhoLS} caracteres
+            `;
+        }
+
+        function inicializar() {
+            console.log('Inicializando rubricas...');
+            DB.rubricas = {};
+            
+            RUBRICAS_DATA.forEach(r => {
+                const key = `${r.rubrica}|${r.item}`;
+                DB.rubricas[key] = {
+                    rubrica: r.rubrica,
+                    descricao: r.descricao,
+                    item: r.item,
+                    saldoTotal: 0,
+                    saldoUtilizado: 0,
+                    saldoDisponivel: 0
+                };
+            });
+            
+            localStorage.setItem('rubricas', JSON.stringify(DB.rubricas));
+            
+            alert(`✅ Rubricas inicializadas!\nTotal: ${Object.keys(DB.rubricas).length} rubricas`);
+            atualizarInfo();
+        }
+
+        function mostrarRubricas() {
+            // Tenta carregar do localStorage
+            const rubricasSalvas = localStorage.getItem('rubricas');
+            if (rubricasSalvas) {
+                DB.rubricas = JSON.parse(rubricasSalvas);
+            }
+            
+            const total = Object.keys(DB.rubricas).length;
+            
+            if (total === 0) {
+                alert('⚠️ Nenhuma rubrica encontrada!\nClique em "Inicializar Rubricas" primeiro.');
+                return;
+            }
+            
+            let html = `<h2>Total: ${total} Rubricas</h2>`;
+            html += `<table>
+                <tr>
+                    <th>#</th>
+                    <th>Rubrica</th>
+                    <th>Descrição</th>
+                    <th>Item</th>
+                    <th>Saldo Total</th>
+                    <th>Disponível</th>
+                </tr>`;
+            
+            let contador = 1;
+            Object.values(DB.rubricas).forEach(rub => {
+                html += `<tr>
+                    <td>${contador++}</td>
+                    <td>${rub.rubrica}</td>
+                    <td>${rub.descricao}</td>
+                    <td>${rub.item}</td>
+                    <td>R$ ${rub.saldoTotal.toFixed(2)}</td>
+                    <td>R$ ${rub.saldoDisponivel.toFixed(2)}</td>
+                </tr>`;
+            });
+            
+            html += '</table>';
+            document.getElementById('resultado').innerHTML = html;
+            atualizarInfo();
+        }
+
+        function limparStorage() {
+            if (confirm('⚠️ Tem certeza que deseja limpar todos os dados?')) {
+                localStorage.clear();
+                DB.rubricas = {};
+                document.getElementById('resultado').innerHTML = '';
+                alert('✅ LocalStorage limpo!');
+                atualizarInfo();
+            }
+        }
+
+        function testarAtualizacao() {
+            const rubricasSalvas = localStorage.getItem('rubricas');
+            if (!rubricasSalvas) {
+                alert('⚠️ Inicialize as rubricas primeiro!');
+                return;
+            }
+            
+            DB.rubricas = JSON.parse(rubricasSalvas);
+            
+            // Atualiza a primeira rubrica
+            const primeiraKey = Object.keys(DB.rubricas)[0];
+            if (!primeiraKey) {
+                alert('⚠️ Nenhuma rubrica encontrada!');
+                return;
+            }
+            
+            const saldoTeste = 50000;
+            DB.rubricas[primeiraKey].saldoTotal = saldoTeste;
+            DB.rubricas[primeiraKey].saldoDisponivel = saldoTeste;
+            
+            localStorage.setItem('rubricas', JSON.stringify(DB.rubricas));
+            
+            alert(`✅ Saldo atualizado!\n\nRubrica: ${DB.rubricas[primeiraKey].rubrica}\nItem: ${DB.rubricas[primeiraKey].item}\nSaldo: R$ ${saldoTeste.toFixed(2)}`);
+            
+            mostrarRubricas();
+        }
+
+        // Carrega informações ao iniciar
+        window.onload = function() {
+            const rubricasSalvas = localStorage.getItem('rubricas');
+            if (rubricasSalvas) {
+                DB.rubricas = JSON.parse(rubricasSalvas);
+            }
+            atualizarInfo();
+        };
+    </script>
+</body>
+</html>
