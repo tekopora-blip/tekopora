@@ -1026,4 +1026,53 @@
         };
     </script>
 </body>
+/* Ajustes específicos para celular */
+@media (max-width: 768px) {
+    body {
+        align-items: flex-start;      /* deixa o conteúdo começar do topo */
+        padding: 10px;                /* reduz margem lateral */
+    }
+
+    .login-container {
+        padding: 24px 16px;
+        box-shadow: none;
+        max-width: 100%;
+        border-radius: 0;
+    }
+
+    .main-container {
+        border-radius: 0;
+        max-width: 100%;
+        max-height: none;             /* deixa crescer conforme o conteúdo */
+        height: 100vh;                /* ocupa a tela toda */
+    }
+
+    .header-bar {
+        padding: 12px 16px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .content-area {
+        padding: 16px;
+        max-height: calc(100vh - 120px); /* header + abas */
+    }
+
+    .menu-tabs {
+        flex-wrap: wrap;
+    }
+
+    .menu-tab {
+        flex: 1 1 50%;
+        text-align: center;
+        padding: 10px 8px;
+        font-size: 13px;
+    }
+
+    /* iframe da Nova Requisição mais confortável no mobile */
+    #tab-nova iframe {
+        height: calc(100vh - 190px);  /* ajusta à altura útil da tela */
+    }
+}
 </html>
