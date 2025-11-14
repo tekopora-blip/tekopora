@@ -389,20 +389,57 @@
             margin-left: 10px;
         }
 
+        /* Ajustes para celular */
         @media (max-width: 768px) {
-            .form-inline {
-                flex-direction: column;
-                align-items: stretch;
+            body {
+                align-items: flex-start;
+                padding: 10px;
+            }
+
+            .login-container {
+                padding: 24px 16px;
+                box-shadow: none;
+                max-width: 100%;
+                border-radius: 0;
+            }
+
+            .main-container {
+                border-radius: 0;
+                max-width: 100%;
+                max-height: none;
+                height: 100vh;
             }
 
             .header-bar {
+                padding: 12px 16px;
                 flex-direction: column;
                 align-items: flex-start;
-                gap: 10px;
+                gap: 8px;
+            }
+
+            .content-area {
+                padding: 16px;
+                max-height: calc(100vh - 120px);
             }
 
             .menu-tabs {
                 flex-wrap: wrap;
+            }
+
+            .menu-tab {
+                flex: 1 1 50%;
+                text-align: center;
+                padding: 10px 8px;
+                font-size: 13px;
+            }
+
+            #tab-nova iframe {
+                height: calc(100vh - 190px);
+            }
+
+            .form-inline {
+                flex-direction: column;
+                align-items: stretch;
             }
         }
     </style>
@@ -473,7 +510,7 @@
             <div id="tab-nova" class="tab-content">
                 <div class="card">
                     <div class="card-title">✨ Nova Requisição</div>
-                    <iframe src="formulario_requisicao.html" style="width: 100%; height: 70vh; border: none; border-radius: 6px;"></iframe>
+                    <iframe src="formulario_requisicao.html" style="width: 100%; border: none; border-radius: 6px;"></iframe>
                 </div>
             </div>
 
@@ -504,7 +541,7 @@
                         </div>
                         <div class="form-group">
                             <label>Saldo Total (R$)</label>
-                            <input type="text" id="saldoInput" placeholder="0,00" />
+                            <input type="text" id="saldoInput" placeholder="0,00">
                         </div>
                         <button type="button" class="btn btn-success" onclick="atualizarSaldo()">💾 Atualizar Saldo</button>
                     </div>
@@ -617,26 +654,16 @@
             { rubrica: "33.90.47", descricao: "OBRIGAÇÕES TRIBUTÁRIAS E CONTRIBUTIVAS", item: "Obrigações tributárias" }
         ];
 
-        // Função para inicializar rubricas
         function inicializarRubricas() {
-            console.log('Inicializando rubricas...');
-            
-            // Tenta carregar do localStorage
             const rubricasSalvas = localStorage.getItem('rubricas');
-            
             if (rubricasSalvas) {
                 try {
                     DB.rubricas = JSON.parse(rubricasSalvas);
-                    console.log('Rubricas carregadas do localStorage:', Object.keys(DB.rubricas).length);
                 } catch (e) {
-                    console.error('Erro ao carregar rubricas do localStorage:', e);
                     DB.rubricas = {};
                 }
             }
-            
-            // Se não houver rubricas, cria do zero
             if (Object.keys(DB.rubricas).length === 0) {
-                console.log('Criando rubricas pela primeira vez...');
                 RUBRICAS_DATA.forEach(r => {
                     const key = `${r.rubrica}|${r.item}`;
                     DB.rubricas[key] = {
@@ -649,31 +676,22 @@
                     };
                 });
                 localStorage.setItem('rubricas', JSON.stringify(DB.rubricas));
-                console.log('Rubricas criadas e salvas:', Object.keys(DB.rubricas).length);
             }
-            
-            console.log('Total de rubricas disponíveis:', Object.keys(DB.rubricas).length);
         }
 
-        // Inicializar rubricas imediatamente
         inicializarRubricas();
 
-        // Login
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            
             const email = document.getElementById('email').value.toLowerCase();
             const password = document.getElementById('password').value;
 
-            // Valida domínio
             if (!email.endsWith('@ifms.edu.br')) {
                 showMessage('loginError', 'Acesso permitido apenas para e-mails @ifms.edu.br');
                 return;
             }
 
-            // Simula autenticação
             if (!DB.users[email]) {
-                // Cria novo usuário na primeira vez
                 DB.users[email] = {
                     email: email,
                     password: password,
@@ -687,20 +705,15 @@
                 return;
             }
 
-            // Login bem-sucedido
             DB.currentUser = DB.users[email];
             localStorage.setItem('currentUser', email);
-            
-            setTimeout(() => {
-                showMainScreen();
-            }, 500);
+            setTimeout(showMainScreen, 500);
         });
 
         function showMessage(elementId, message) {
             const el = document.getElementById(elementId);
             el.textContent = message;
             el.style.display = 'block';
-            
             setTimeout(() => {
                 el.style.display = 'none';
             }, 5000);
@@ -709,17 +722,15 @@
         function showMainScreen() {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('mainScreen').style.display = 'block';
-            
             document.getElementById('userEmail').textContent = DB.currentUser.email;
-            
-            // Mostra abas admin
+
             if (DB.currentUser.isAdmin) {
                 document.getElementById('adminBadge').style.display = 'inline-block';
                 document.getElementById('tabAprovacao').style.display = 'block';
                 document.getElementById('tabRubricas').style.display = 'block';
                 carregarRubricas();
             }
-            
+
             carregarMinhasRequisicoes();
         }
 
@@ -732,15 +743,12 @@
         }
 
         function showTab(e, tabName) {
-            // Remove active de todas as abas
             document.querySelectorAll('.menu-tab').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-            
-            // Ativa a aba selecionada
+
             e.target.classList.add('active');
             document.getElementById(`tab-${tabName}`).classList.add('active');
-            
-            // Carrega dados específicos da aba
+
             if (tabName === 'requisicoes') {
                 carregarMinhasRequisicoes();
             } else if (tabName === 'aprovacao') {
@@ -752,10 +760,9 @@
 
         function carregarMinhasRequisicoes() {
             if (!DB.currentUser) return;
-
             const minhas = DB.requisicoes.filter(r => r.usuario === DB.currentUser.email);
             const container = document.getElementById('listaRequisicoes');
-            
+
             if (minhas.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
@@ -767,7 +774,6 @@
             }
 
             let html = '<table><thead><tr><th>ID</th><th>Data</th><th>Projeto</th><th>Itens</th><th>Status</th><th>Ações</th></tr></thead><tbody>';
-            
             minhas.forEach(req => {
                 let statusClass;
                 switch (req.status) {
@@ -777,7 +783,7 @@
                     case 'rejeitado': statusClass = 'rejected'; break;
                     default: statusClass = 'draft';
                 }
-                
+
                 html += `
                     <tr>
                         <td>#${req.id}</td>
@@ -793,7 +799,7 @@
                     </tr>
                 `;
             });
-            
+
             html += '</tbody></table>';
             container.innerHTML = html;
         }
@@ -801,7 +807,7 @@
         function carregarAprovacoes() {
             const pendentes = DB.requisicoes.filter(r => r.status === 'pendente');
             const container = document.getElementById('listaAprovacoes');
-            
+
             if (pendentes.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
@@ -813,7 +819,6 @@
             }
 
             let html = '<table><thead><tr><th>ID</th><th>Usuário</th><th>Data</th><th>Projeto</th><th>Itens</th><th>Ações</th></tr></thead><tbody>';
-            
             pendentes.forEach(req => {
                 html += `
                     <tr>
@@ -830,34 +835,25 @@
                     </tr>
                 `;
             });
-            
+
             html += '</tbody></table>';
             container.innerHTML = html;
         }
 
         function carregarRubricas() {
-            console.log('Carregando rubricas...');
-            console.log('Total de rubricas:', Object.keys(DB.rubricas).length);
-            
             const select = document.getElementById('rubricaSelect');
-            if (!select) {
-                console.error('Select de rubricas não encontrado!');
-                return;
-            }
-            
+            if (!select) return;
+
             select.innerHTML = '<option value="">Selecione uma rubrica...</option>';
-            
-            // Agrupa rubricas por código para melhor visualização
+
             const rubricasAgrupadas = {};
-            
             Object.values(DB.rubricas).forEach(rub => {
                 if (!rubricasAgrupadas[rub.rubrica]) {
                     rubricasAgrupadas[rub.rubrica] = [];
                 }
                 rubricasAgrupadas[rub.rubrica].push(rub);
             });
-            
-            // Ordena e adiciona as options
+
             Object.keys(rubricasAgrupadas).sort().forEach(codRubrica => {
                 rubricasAgrupadas[codRubrica].forEach(rub => {
                     const option = document.createElement('option');
@@ -867,21 +863,12 @@
                 });
             });
 
-            console.log('Select populado com', select.options.length - 1, 'rubricas');
-
             const tbody = document.getElementById('corpoTabelaRubricas');
-            if (!tbody) {
-                console.error('Tbody da tabela não encontrado!');
-                return;
-            }
-            
+            if (!tbody) return;
             tbody.innerHTML = '';
 
-            // Ordena rubricas por código
             const rubricasOrdenadas = Object.values(DB.rubricas).sort((a, b) => {
-                if (a.rubrica !== b.rubrica) {
-                    return a.rubrica.localeCompare(b.rubrica);
-                }
+                if (a.rubrica !== b.rubrica) return a.rubrica.localeCompare(b.rubrica);
                 return a.item.localeCompare(b.item);
             });
 
@@ -890,7 +877,7 @@
                 const saldoDisp = rub.saldoDisponivel || 0;
                 const saldoUtil = rub.saldoUtilizado || 0;
                 const saldoTotal = rub.saldoTotal || 0;
-                
+
                 tr.innerHTML = `
                     <td style="font-weight: 600;">${rub.rubrica}</td>
                     <td>${rub.descricao} - <strong>${rub.item}</strong></td>
@@ -902,41 +889,28 @@
                 `;
                 tbody.appendChild(tr);
             });
-            
-            console.log('Tabela atualizada com', rubricasOrdenadas.length, 'linhas');
         }
 
         function atualizarSaldo() {
-            console.log('Função atualizarSaldo chamada');
-            
             const selectElement = document.getElementById('rubricaSelect');
             const inputElement = document.getElementById('saldoInput');
-            
+
             const key = selectElement ? selectElement.value : '';
             const saldoInput = inputElement ? inputElement.value : '';
-            
-            console.log('Key selecionada:', key);
-            console.log('Saldo digitado (original):', saldoInput);
-            
+
             if (!key) {
                 alert('Por favor, selecione uma rubrica');
                 return;
             }
-            
+
             if (!saldoInput || saldoInput.trim() === '') {
                 alert('Por favor, informe um valor de saldo');
                 return;
             }
 
-            // Normaliza número em formato brasileiro: 1.234,56 -> 1234.56
-            const normalizado = saldoInput
-                .replace(/\./g, '')   // remove pontos de milhar
-                .replace(',', '.');   // substitui vírgula por ponto
-
+            const normalizado = saldoInput.replace(/\./g, '').replace(',', '.');
             const saldo = parseFloat(normalizado);
-            
-            console.log('Saldo parseado:', saldo);
-            
+
             if (isNaN(saldo)) {
                 alert('Por favor, informe um valor numérico válido (ex.: 1000,50)');
                 return;
@@ -944,31 +918,19 @@
 
             if (!DB.rubricas[key]) {
                 alert('Rubrica não encontrada no sistema');
-                console.log('Rubricas disponíveis:', Object.keys(DB.rubricas));
                 return;
             }
 
-            console.log('Rubrica antes da atualização:', DB.rubricas[key]);
-
-            // Atualiza os valores
             DB.rubricas[key].saldoTotal = saldo;
             DB.rubricas[key].saldoUtilizado = DB.rubricas[key].saldoUtilizado || 0;
             DB.rubricas[key].saldoDisponivel = saldo - DB.rubricas[key].saldoUtilizado;
-            
-            console.log('Rubrica depois da atualização:', DB.rubricas[key]);
-            
-            // Salva no localStorage
+
             localStorage.setItem('rubricas', JSON.stringify(DB.rubricas));
-            console.log('Dados salvos no localStorage');
-            
-            // Recarrega a tabela
             carregarRubricas();
-            console.log('Tabela recarregada');
-            
-            // Limpa os campos
+
             document.getElementById('rubricaSelect').value = '';
             document.getElementById('saldoInput').value = '';
-            
+
             alert(
                 '✅ Saldo atualizado com sucesso!\n\n' + 
                 'Rubrica: ' + DB.rubricas[key].rubrica + '\n' +
@@ -978,7 +940,6 @@
         }
 
         function visualizarRequisicao(id) {
-            const req = DB.requisicoes.find(r => r.id === id);
             alert(`Visualizando requisição #${id}\n\nEsta funcionalidade abrirá uma modal com os detalhes completos.`);
         }
 
@@ -993,7 +954,7 @@
                 req.status = 'aprovado';
                 req.aprovadoPor = DB.currentUser.email;
                 req.dataAprovacao = new Date().toISOString();
-                
+
                 localStorage.setItem('requisicoes', JSON.stringify(DB.requisicoes));
                 carregarAprovacoes();
                 alert('Requisição aprovada com sucesso.');
@@ -1009,14 +970,13 @@
                 req.motivoRejeicao = motivo;
                 req.rejeitadoPor = DB.currentUser.email;
                 req.dataRejeicao = new Date().toISOString();
-                
+
                 localStorage.setItem('requisicoes', JSON.stringify(DB.requisicoes));
                 carregarAprovacoes();
                 alert('Requisição devolvida para correção.');
             }
         }
 
-        // Verifica se há usuário logado ao carregar
         window.onload = function() {
             const savedUser = localStorage.getItem('currentUser');
             if (savedUser && DB.users[savedUser]) {
@@ -1026,53 +986,4 @@
         };
     </script>
 </body>
-/* Ajustes específicos para celular */
-@media (max-width: 768px) {
-    body {
-        align-items: flex-start;      /* deixa o conteúdo começar do topo */
-        padding: 10px;                /* reduz margem lateral */
-    }
-
-    .login-container {
-        padding: 24px 16px;
-        box-shadow: none;
-        max-width: 100%;
-        border-radius: 0;
-    }
-
-    .main-container {
-        border-radius: 0;
-        max-width: 100%;
-        max-height: none;             /* deixa crescer conforme o conteúdo */
-        height: 100vh;                /* ocupa a tela toda */
-    }
-
-    .header-bar {
-        padding: 12px 16px;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 8px;
-    }
-
-    .content-area {
-        padding: 16px;
-        max-height: calc(100vh - 120px); /* header + abas */
-    }
-
-    .menu-tabs {
-        flex-wrap: wrap;
-    }
-
-    .menu-tab {
-        flex: 1 1 50%;
-        text-align: center;
-        padding: 10px 8px;
-        font-size: 13px;
-    }
-
-    /* iframe da Nova Requisição mais confortável no mobile */
-    #tab-nova iframe {
-        height: calc(100vh - 190px);  /* ajusta à altura útil da tela */
-    }
-}
 </html>
