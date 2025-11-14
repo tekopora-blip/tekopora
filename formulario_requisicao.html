@@ -3,13 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <title>Nova Requisição - Teko Porã</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  font-size: 15px;
-  padding: 16px;
-  background-color: #f9fafb;
-}
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      font-size: 15px;
+      padding: 16px;
+      background-color: #f9fafb;
+    }
 
     .form-group {
       margin-bottom: 15px;
@@ -29,7 +30,7 @@
       padding: 10px;
       border-radius: 6px;
       border: 1px solid #d0d0d0;
-      font-size: 16px;
+      font-size: 16px;   /* evita zoom automático no mobile */
       box-sizing: border-box;
     }
 
@@ -87,30 +88,30 @@
       color: #555;
       margin-top: 5px;
     }
-@media (max-width: 600px) {
-  body {
-    padding: 10px;
-  }
 
-  .form-group {
-    margin-bottom: 12px;
-  }
+    @media (max-width: 600px) {
+      body {
+        padding: 10px;
+      }
 
-  .info-box,
-  .warning-box {
-    font-size: 13px;
-    padding: 8px;
-  }
+      .form-group {
+        margin-bottom: 12px;
+      }
 
-  .btn {
-    width: 100%;      /* botão ocupar largura total no celular */
-    text-align: center;
-  }
-}
+      .info-box,
+      .warning-box {
+        font-size: 13px;
+        padding: 8px;
+      }
+
+      .btn {
+        width: 100%;
+        text-align: center;
+      }
+    }
   </style>
 </head>
 <body>
-
   <form id="formNovaRequisicao">
     <div class="info-box">
       Preencha os campos da requisição. A rubrica deve ser uma das já cadastradas no sistema. Caso não localize a rubrica desejada, será necessário solicitar o cadastro por e-mail para <strong>teko.pora@ifms.edu.br</strong>.
@@ -121,12 +122,11 @@
       <input type="text" id="projeto" name="projeto" required>
     </div>
 
-    <!-- RUBRICA (CARREGA DO LOCALSTORAGE) -->
+    <!-- Rubrica -->
     <div class="form-group">
       <label for="rubricaSelect">Rubrica</label>
       <select id="rubricaSelect" name="rubrica" required>
         <option value="">Selecione uma rubrica...</option>
-        <!-- opções preenchidas via JS -->
         <option value="__NOVA__">Solicitar cadastro de nova rubrica...</option>
       </select>
       <div id="rubricaDescricao" class="rubrica-desc"></div>
@@ -140,8 +140,7 @@
           <li>Justificativa da necessidade.</li>
         </ul>
         <p style="margin-top:5px;">
-          Você pode utilizar este atalho:
-          <br>
+          Você pode utilizar este atalho:<br>
           <a id="linkNovaRubrica" href="#">
             Abrir e-mail para cadastro de nova rubrica
           </a>
@@ -152,7 +151,6 @@
       </div>
     </div>
 
-    <!-- Exemplo de outros campos da requisição -->
     <div class="form-group">
       <label for="descricaoItens">Descrição dos itens / serviço</label>
       <textarea id="descricaoItens" name="descricaoItens" required></textarea>
@@ -163,35 +161,20 @@
       <input type="number" id="valorEstimado" name="valorEstimado" step="0.01" min="0" required>
     </div>
 
-    <button type="submit" class="btn btn-primary" id="btnSalvar">
-      Salvar Requisição
-    </button>
+    <button type="submit" class="btn btn-primary" id="btnSalvar">Salvar Requisição</button>
   </form>
 
   <script>
-    // Carrega rubricas já cadastradas do localStorage
     function carregarRubricasNoFormulario() {
       const select = document.getElementById('rubricaSelect');
       const rubricaDescricao = document.getElementById('rubricaDescricao');
 
       const rubricasLocal = localStorage.getItem('rubricas');
       if (!rubricasLocal) {
-        // Sem rubricas cadastradas
         rubricaDescricao.textContent = 'Nenhuma rubrica cadastrada no sistema. Solicite o cadastro por e-mail.';
         return;
       }
 
-      /** rubricas é um objeto do tipo:
-       *  {
-       *    "33.90.18|Bolsa Estágio I": {
-       *      rubrica: "33.90.18",
-       *      descricao: "BOLSA",
-       *      item: "Bolsa Estágio I",
-       *      ...
-       *    },
-       *    ...
-       *  }
-       */
       let rubricas;
       try {
         rubricas = JSON.parse(rubricasLocal);
@@ -201,7 +184,6 @@
         return;
       }
 
-      // Remove todas as opções (exceto a primeira e a de nova rubrica)
       const valorNova = '__NOVA__';
       const opNova = Array.from(select.options).find(opt => opt.value === valorNova);
       select.innerHTML = '<option value="">Selecione uma rubrica...</option>';
@@ -214,7 +196,6 @@
         select.appendChild(optNova);
       }
 
-      // Converte para array e ordena
       const lista = Object.values(rubricas).sort((a, b) => {
         if (a.rubrica !== b.rubrica) return a.rubrica.localeCompare(b.rubrica);
         return a.item.localeCompare(b.item);
@@ -248,12 +229,10 @@
         }
 
         if (valor === '__NOVA__') {
-          // Usuário quer rubrica não cadastrada
           descDiv.textContent = '';
           avisoNova.style.display = 'block';
-          btnSalvar.disabled = true; // impede envio sem rubrica cadastrada
+          btnSalvar.disabled = true;
 
-          // Prepara link mailto
           const assunto = encodeURIComponent('Cadastro de nova rubrica - Sistema Teko Porã');
           const corpo = encodeURIComponent(
             'Prezados(as),\n\n' +
@@ -267,7 +246,6 @@
           );
           linkNovaRubrica.href = `mailto:teko.pora@ifms.edu.br?subject=${assunto}&body=${corpo}`;
         } else {
-          // Rubrica existente
           avisoNova.style.display = 'none';
           btnSalvar.disabled = false;
 
@@ -298,10 +276,7 @@
           return;
         }
 
-        // Aqui você pode:
-        // - enviar os dados para o Apps Script (google.script.run)
-        // - ou gravar em localStorage, de acordo com sua arquitetura atual
-
+        // Aqui é o ponto para integrar com backend/Apps Script ou com o index via postMessage
         alert('Requisição salva (exemplo). Integre aqui com o backend / Apps Script.');
       });
     }
