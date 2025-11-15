@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Teko Porã</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #8D2033 0%, #5a1420 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .login-container {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      max-width: 450px;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .login-header {
+      background: linear-gradient(135deg, #8D2033 0%, #6a1825 100%);
+      color: white;
+      padding: 40px 30px;
+      text-align: center;
+    }
+
+    .login-header h1 {
+      font-size: 28px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .login-header p {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .login-body {
+      padding: 40px 30px;
+    }
+
+    .welcome-text {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+
+    .welcome-text h2 {
+      color: #333;
+      font-size: 20px;
+      margin-bottom: 10px;
+    }
+
+    .welcome-text p {
+      color: #666;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .user-info {
+      background: #f9f9f9;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .user-info-label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 6px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .user-info-value {
+      font-size: 16px;
+      color: #333;
+      word-break: break-all;
+      padding: 8px;
+      background: white;
+      border-radius: 4px;
+      border: 1px solid #ddd;
+    }
+
+    .user-info-value.email {
+      color: #8D2033;
+      font-weight: 500;
+    }
+
+    .btn {
+      display: block;
+      width: 100%;
+      padding: 14px 24px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+      text-align: center;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #8D2033 0%, #6a1825 100%);
+      color: white;
+      margin-bottom: 12px;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(141, 32, 51, 0.4);
+    }
+
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: white;
+      color: #8D2033;
+      border: 2px solid #8D2033;
+    }
+
+    .btn-secondary:hover {
+      background: #f9f9f9;
+    }
+
+    .info-box {
+      background: #e8f4f8;
+      border-left: 4px solid #17a2b8;
+      padding: 15px;
+      border-radius: 4px;
+      margin-top: 20px;
+    }
+
+    .info-box-title {
+      font-weight: 600;
+      color: #0c5460;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+
+    .info-box-text {
+      font-size: 13px;
+      color: #0c5460;
+      line-height: 1.5;
+    }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+
+    .alert-warning {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      color: #856404;
+    }
+
+    .alert-error {
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 20px;
+      color: #999;
+      font-size: 12px;
+      background: #f9f9f9;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .loading.show {
+      display: block;
+    }
+
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #8D2033;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    @media (max-width: 480px) {
+      .login-header {
+        padding: 30px 20px;
+      }
+
+      .login-header h1 {
+        font-size: 24px;
+      }
+
+      .login-body {
+        padding: 30px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-header">
+      <div class="icon">🌿</div>
+      <h1>Sistema Teko Porã</h1>
+      <p>Requisições de Compra - IFMS</p>
+    </div>
+
+    <div class="login-body">
+      <div id="loadingArea" class="loading">
+        <div class="spinner"></div>
+        <p style="margin-top: 16px; color: #666;">Verificando autenticação...</p>
+      </div>
+
+      <div id="loginArea">
+        <div class="welcome-text">
+          <h2>Bem-vindo!</h2>
+          <p>Para acessar o sistema, confirme seus dados de login do Google.</p>
+        </div>
+
+        <div id="userInfoArea"></div>
+        <div id="alertArea"></div>
+
+        <button class="btn btn-primary" id="btnEntrar" onclick="entrarNoSistema()">
+          🔐 Acessar Sistema
+        </button>
+
+        <div class="info-box">
+          <div class="info-box-title">ℹ️ Acesso Restrito</div>
+          <div class="info-box-text">
+            Este sistema é exclusivo para usuários cadastrados do IFMS.
+            Apenas contas @ifms.edu.br têm acesso autorizado.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <div>Programa Teko Porã - Instituto Federal de Mato Grosso do Sul</div>
+      <div style="margin-top: 4px;">Desenvolvido para gerenciamento de requisições de compra</div>
+    </div>
+  </div>
+
+  <script>
+    // Dados do usuário vindos do servidor
+    const dadosIniciais = <?= JSON.stringify(dadosIniciais) ?>;
+
+    function showLoading() {
+      document.getElementById('loadingArea').classList.add('show');
+      document.getElementById('loginArea').style.display = 'none';
+    }
+
+    function hideLoading() {
+      document.getElementById('loadingArea').classList.remove('show');
+      document.getElementById('loginArea').style.display = 'block';
+    }
+
+    function mostrarAlerta(mensagem, tipo = 'warning') {
+      const alertArea = document.getElementById('alertArea');
+      alertArea.innerHTML = `
+        <div class="alert alert-${tipo}">
+          <strong>${tipo === 'error' ? '❌ Erro:' : '⚠️ Atenção:'}</strong> ${mensagem}
+        </div>
+      `;
+    }
+
+    function mostrarInfoUsuario(usuario) {
+      const userInfoArea = document.getElementById('userInfoArea');
+
+      if (!usuario || !usuario.email) {
+        mostrarAlerta('Não foi possível obter informações do usuário. Recarregue a página.', 'error');
+        return;
+      }
+
+      let statusHtml = '';
+      let btnDisabled = '';
+
+      if (usuario.perfil === 'NAO_CADASTRADO' || !usuario.ativo) {
+        mostrarAlerta(
+          'Seu e-mail não está cadastrado no sistema. Entre em contato com o administrador (teko.pora@ifms.edu.br) para solicitar acesso.',
+          'error'
+        );
+        btnDisabled = 'disabled';
+        statusHtml = '<div style="color: #dc3545; font-weight: 600; margin-top: 8px;">❌ Acesso Negado</div>';
+      } else {
+        statusHtml = `
+          <div style="color: #28a745; font-weight: 600; margin-top: 8px;">✅ Acesso Autorizado</div>
+          <div style="font-size: 13px; color: #666; margin-top: 4px;">Perfil: <strong>${usuario.perfil}</strong></div>
+        `;
+      }
+
+      userInfoArea.innerHTML = `
+        <div class="user-info">
+          <div class="user-info-label">Usuário Identificado</div>
+          <div class="user-info-value">${usuario.nome || usuario.email}</div>
+
+          <div class="user-info-label" style="margin-top: 12px;">E-mail do Google</div>
+          <div class="user-info-value email">${usuario.email}</div>
+
+          ${statusHtml}
+        </div>
+      `;
+
+      // Desabilita botão se não tiver acesso
+      if (btnDisabled) {
+        document.getElementById('btnEntrar').disabled = true;
+        document.getElementById('btnEntrar').style.opacity = '0.5';
+        document.getElementById('btnEntrar').style.cursor = 'not-allowed';
+      }
+    }
+
+    function entrarNoSistema() {
+      const usuario = dadosIniciais.usuario;
+
+      if (!usuario || usuario.perfil === 'NAO_CADASTRADO' || !usuario.ativo) {
+        mostrarAlerta('Você não tem permissão para acessar o sistema.', 'error');
+        return;
+      }
+
+      showLoading();
+
+      // Redireciona para a página principal (mesma URL, mas com parâmetro)
+      const url = window.location.href;
+      const separator = url.includes('?') ? '&' : '?';
+      window.location.href = url + separator + 'page=main&t=' + new Date().getTime();
+    }
+
+    // Inicialização
+    window.addEventListener('DOMContentLoaded', function() {
+      hideLoading();
+
+      if (dadosIniciais && dadosIniciais.usuario) {
+        mostrarInfoUsuario(dadosIniciais.usuario);
+      } else {
+        mostrarAlerta('Erro ao carregar dados do usuário. Recarregue a página.', 'error');
+      }
+    });
+  </script>
+</body>
+</html>

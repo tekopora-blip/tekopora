@@ -869,8 +869,20 @@ function doGet(e) {
       return mostrarTelaSetup();
     }
 
-    const template = HtmlService.createTemplateFromFile('Index');
     const user = getUsuarioAtual();
+
+    // Se não tem o parâmetro page=main, mostra tela de login
+    if (!e || !e.parameter || e.parameter.page !== 'main') {
+      return mostrarTelaLogin(user);
+    }
+
+    // Verifica se usuário está autorizado
+    if (!user.ativo || user.perfil === 'NAO_CADASTRADO') {
+      return mostrarTelaAcessoNegado(user);
+    }
+
+    // Mostra a tela principal
+    const template = HtmlService.createTemplateFromFile('Index');
 
     template.dadosIniciais = {
       usuario: user,
@@ -886,6 +898,104 @@ function doGet(e) {
   } catch (error) {
     return mostrarTelaErro(error);
   }
+}
+
+/**
+ * Mostra tela de login
+ */
+function mostrarTelaLogin(user) {
+  const template = HtmlService.createTemplateFromFile('Login');
+
+  template.dadosIniciais = {
+    usuario: user
+  };
+
+  return template.evaluate()
+    .setTitle('Login - Teko Porã')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+/**
+ * Mostra tela de acesso negado
+ */
+function mostrarTelaAcessoNegado(user) {
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acesso Negado - Teko Porã</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background: #f0f0f0;
+    }
+    .container {
+      background: white;
+      padding: 40px;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    h1 {
+      color: #dc3545;
+      font-size: 48px;
+      margin: 0;
+    }
+    h2 {
+      color: #333;
+      margin-top: 20px;
+    }
+    .user-info {
+      background: #f8d7da;
+      border: 1px solid #f5c6cb;
+      color: #721c24;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 20px 0;
+    }
+    .info {
+      background: #d1ecf1;
+      border: 1px solid #bee5eb;
+      color: #0c5460;
+      padding: 15px;
+      border-radius: 4px;
+      margin: 20px 0;
+      text-align: left;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🚫</h1>
+    <h2>Acesso Negado</h2>
+
+    <div class="user-info">
+      <strong>Usuário:</strong> ${escapeHtml(user.email)}<br>
+      <strong>Status:</strong> Não cadastrado no sistema
+    </div>
+
+    <div class="info">
+      <strong>Como obter acesso?</strong><br><br>
+      1. Entre em contato com o administrador do sistema<br>
+      2. E-mail: <strong>teko.pora@ifms.edu.br</strong><br>
+      3. Solicite cadastro informando seu nome e e-mail @ifms.edu.br
+    </div>
+
+    <p><button onclick="window.location.reload()" style="padding: 10px 20px; font-size: 14px; cursor: pointer;">
+      🔄 Recarregar Página
+    </button></p>
+  </div>
+</body>
+</html>`;
+
+  return HtmlService.createHtmlOutput(html)
+    .setTitle('Acesso Negado - Teko Porã')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
 /**
