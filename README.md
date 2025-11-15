@@ -1,159 +1,410 @@
-# Sistema de Requisições - Projeto Teko Porã
+# 🌿 Sistema de Requisições de Compra - Programa Teko Porã
 
-## 🌿 Sobre o Sistema
+Sistema completo de gerenciamento de requisições de compras desenvolvido em Google Apps Script para o Programa Teko Porã do IFMS (Instituto Federal de Mato Grosso do Sul).
 
-Sistema completo de gerenciamento de requisições para o Projeto Teko Porã com:
-- ✅ Autenticação restrita para @ifms.edu.br
-- ✅ Gestão de rubricas e saldos
-- ✅ Fluxo de aprovação
-- ✅ Controle de status (Rascunho, Pendente, Aprovado, Rejeitado)
-- ✅ Geração de PDF
-
-## 📁 Arquivos do Sistema
-
-1. **index.html** - Tela de login e gerenciamento principal
-2. **formulario_requisicao.html** - Formulário de cadastro de requisições
-
-## 🚀 Como Usar
-
-### Primeira Vez
-
-1. Abra o arquivo `index.html` no navegador
-2. Faça login com um e-mail @ifms.edu.br
-3. Na primeira vez, o sistema criará automaticamente sua conta
-4. Use a mesma senha nas próximas vezes
-
-### Acesso Administrativo
-
-**E-mail especial:** `teko.pora@ifms.edu.br`
-
-Este e-mail tem poderes de administrador:
-- ✅ Gerenciar saldos das rubricas
-- ✅ Aprovar/devolver requisições
-- ✅ Visualizar todas as requisições pendentes
-
-### Usuários Comuns
-
-Qualquer e-mail @ifms.edu.br pode:
-- ✅ Criar novas requisições
-- ✅ Salvar requisições como rascunho
-- ✅ Enviar requisições para aprovação
-- ✅ Visualizar suas próprias requisições
-- ✅ Corrigir requisições devolvidas
-
-## 📝 Fluxo de Trabalho
-
-### 1. Criar Requisição (Usuário)
-- Acesse "Nova Requisição"
-- Preencha todos os campos obrigatórios
-- Adicione os itens necessários
-- **Opções:**
-  - **Salvar Rascunho** - Pode editar depois
-  - **Enviar** - Envia para aprovação (não pode mais editar)
-
-### 2. Gerenciar Rubricas (Admin)
-- Acesse "Gerenciar Rubricas"
-- Selecione a rubrica desejada
-- Informe o saldo total disponível
-- Clique em "Atualizar Saldo"
-- O sistema calcula automaticamente:
-  - Saldo Disponível = Total - Utilizado
-
-### 3. Aprovar/Devolver (Admin)
-- Acesse "Aprovações"
-- Visualize requisições pendentes
-- **Opções:**
-  - **Aprovar** - Requisição aprovada
-  - **Devolver** - Volta para correção (informe motivo)
-
-### 4. Corrigir (Usuário)
-- Se devolvida, aparece em "Minhas Requisições"
-- Status: REJEITADO
-- Botão "Corrigir" disponível
-- Após correção, pode reenviar
-
-## 📊 Rubricas Cadastradas
-
-O sistema já vem com 78 rubricas pré-cadastradas:
-
-### Principais Categorias:
-- **33.90.18** - BOLSA (5 tipos)
-- **33.90.39** - OUTROS SERVIÇOS PESSOA JURÍDICA (5 tipos)
-- **33.90.20** - BOLSAS PESQUISADOR (35 tipos)
-- **33.90.14** - DIÁRIAS (1 tipo)
-- **44.90.52** - EQUIPAMENTOS E MATERIAL PERMANENTE (27 tipos)
-- **33.90.30** - MATERIAL DE CONSUMO (2 tipos)
-- **33.90.33** - PASSAGENS E DESPESAS (1 tipo)
-- **33.00.36** - SERVIÇOS PESSOA FÍSICA (1 tipo)
-- **33.90.47** - OBRIGAÇÕES TRIBUTÁRIAS (1 tipo)
-
-## 🔒 Segurança
-
-- Acesso restrito apenas @ifms.edu.br
-- Senhas armazenadas localmente (localStorage)
-- Admin único: teko.pora@ifms.edu.br
-- Requisições vinculadas ao usuário criador
-
-## 💾 Armazenamento
-
-O sistema usa **localStorage** do navegador para simular banco de dados:
-- Usuários cadastrados
-- Requisições criadas
-- Saldos das rubricas
-- Histórico de aprovações/rejeições
-
-**Importante:** Os dados ficam salvos no navegador. Para produção real, é necessário implementar um backend com banco de dados real.
-
-## 📄 Geração de PDF
-
-O botão "Gerar PDF" cria um documento completo com:
-- Dados gerais da requisição
-- Todas as metas e informações
-- Tabela resumida dos itens
-- Detalhamento completo de cada item
-- Observações
-
-## 🌐 Publicação no GitHub Pages
-
-Para publicar o sistema:
-
-1. Faça upload dos 2 arquivos no GitHub:
-   - index.html
-   - formulario_requisicao.html
-
-2. Vá em Settings → Pages
-
-3. Configure a branch main
-
-4. Acesse: `https://seu-usuario.github.io/seu-repo/index.html`
-
-## 🔧 Customizações Futuras
-
-Para implementar em produção real:
-
-1. **Backend (Recomendado: Firebase, Node.js + MongoDB)**
-   - Autenticação real
-   - Banco de dados persistente
-   - API REST
-
-2. **E-mail Notifications**
-   - Notificar usuário quando aprovado/devolvido
-   - Notificar admin de novas requisições
-
-3. **Relatórios**
-   - Dashboard com gráficos
-   - Exportação para Excel
-   - Histórico completo
-
-4. **Anexos**
-   - Upload de documentos
-   - Armazenamento em nuvem
-
-## 📞 Suporte
-
-Para dúvidas ou problemas:
-- Contate: teko.pora@ifms.edu.br
+![Status](https://img.shields.io/badge/status-ativo-success)
+![Versão](https://img.shields.io/badge/versão-2.0-blue)
+![Plataforma](https://img.shields.io/badge/plataforma-Google%20Apps%20Script-yellow)
 
 ---
 
-**Desenvolvido para o Projeto Teko Porã - IFMS**
+## 📋 Sobre o Sistema
+
+O Sistema de Requisições de Compra foi desenvolvido para automatizar e gerenciar todo o fluxo de requisições do Programa Teko Porã, desde a criação da requisição pelo solicitante até a autorização final no portal FADEX.
+
+### Principais Funcionalidades
+
+✅ **Gestão Completa de Requisições**
+- 5 tipos de requisições suportadas
+- Numeração automática (001/2025)
+- Cadastro ilimitado de itens por requisição
+- Validações automáticas de campos obrigatórios
+
+✅ **Workflow de Aprovação**
+- Status rastreáveis (Rascunho → Enviada → Aprovada → Cadastrada → Autorizada)
+- Aprovação/rejeição pelo administrador
+- Solicitação de correções
+- Histórico completo em logs
+
+✅ **Notificações Inteligentes**
+- E-mails HTML formatados e profissionais
+- Notificações automáticas em cada etapa
+- Assuntos únicos para fácil identificação
+
+✅ **Integração FADEX**
+- Cadastradores especializados
+- Registro de Número WEB e Protocolo
+- Upload de comprovantes
+- Envio para autorização do coordenador
+
+✅ **Segurança e Controle**
+- 3 níveis de acesso (Admin, Requisitante, Cadastrador)
+- Usuários cadastrados previamente
+- Logs de todas as ações
+- Proteção contra edição após envio
+
+---
+
+## 🎯 Tipos de Requisições
+
+O sistema suporta 5 tipos de requisições de compra:
+
+1. **Material de Consumo**
+2. **Material Permanente**
+3. **Serviços de Pessoa Jurídica**
+4. **Compra de Passagens**
+5. **Reembolso de Compras**
+
+---
+
+## 👥 Perfis de Usuário
+
+### 🔐 Administrador
+**Email:** teko.pora@ifms.edu.br
+
+**Permissões:**
+- Visualizar todas as requisições
+- Aprovar/Rejeitar requisições
+- Solicitar correções
+- Atribuir cadastradores
+- Criar requisições (opcional)
+
+### 👤 Requisitante
+**Qualquer usuário @ifms.edu.br cadastrado**
+
+**Permissões:**
+- Criar novas requisições
+- Salvar como rascunho
+- Enviar para aprovação
+- Editar requisições em Rascunho ou Em Correção
+- Visualizar próprias requisições
+
+### 📝 Cadastrador FADEX
+**Usuários específicos:**
+- laryssa.brasil.tp@ifms.edu.br
+- sonia.biron.tp@ifms.edu.br
+- angela.schwingel.tp@ifms.edu.br
+
+**Permissões:**
+- Visualizar requisições aprovadas atribuídas
+- Preencher dados do portal FADEX (Número WEB, Protocolo)
+- Upload de comprovantes
+- Enviar para autorização do coordenador
+
+---
+
+## 🔄 Fluxo do Sistema
+
+```
+┌─────────────────┐
+│  Requisitante   │
+│  Cria Requisição│
+└────────┬────────┘
+         │
+         ▼
+┌─────────────────┐
+│    RASCUNHO     │ ◄─┐
+│ (pode editar)   │   │
+└────────┬────────┘   │
+         │            │
+         │ Enviar     │
+         ▼            │
+┌─────────────────┐   │
+│     ENVIADA     │   │
+│  (não edita)    │   │
+└────────┬────────┘   │
+         │            │
+    Administrador     │
+    avalia            │
+         │            │
+         ├──Aprovar───┼──Rejeitar──┐
+         │            │            │
+         │    Solicitar Correção   │
+         │            └────────────┤
+         ▼                         ▼
+┌─────────────────┐      ┌─────────────────┐
+│    APROVADA     │      │  EM CORREÇÃO    │
+│                 │      │  (pode editar)  │
+└────────┬────────┘      └─────────────────┘
+         │
+    Cadastrador
+    preenche FADEX
+         │
+         ▼
+┌─────────────────┐
+│   CADASTRADA    │
+│  (dados FADEX)  │
+└────────┬────────┘
+         │
+         │ Enviar Autorização
+         ▼
+┌─────────────────┐
+│ENVIADA AUTORIZAÇÃO│
+│  (coordenador)  │
+└─────────────────┘
+```
+
+---
+
+## 📧 Notificações por E-mail
+
+O sistema envia e-mails automáticos HTML formatados em 4 situações:
+
+### 1. Nova Requisição Enviada
+- **Para:** teko.pora@ifms.edu.br
+- **CC:** fernando.alves@ifms.edu.br
+- **Quando:** Requisitante envia requisição
+
+### 2. Requisição Aprovada
+- **Para:** Cadastrador designado
+- **CC:** teko.pora@ifms.edu.br
+- **Quando:** Admin aprova requisição
+
+### 3. Requisição Rejeitada/Em Correção
+- **Para:** Requisitante
+- **CC:** teko.pora@ifms.edu.br
+- **Quando:** Admin rejeita ou solicita correção
+
+### 4. Requisição Cadastrada FADEX
+- **Para:** teko.pora@ifms.edu.br (coordenador)
+- **CC:** teko.pora@ifms.edu.br
+- **Quando:** Cadastrador envia para autorização
+
+---
+
+## 📦 Estrutura de Arquivos
+
+```
+tekopora/
+├── Code.gs                      # Código principal do sistema
+├── Index.html                   # Interface web do sistema
+├── ESTRUTURA_PLANILHA.md       # Documentação completa da planilha
+├── GUIA_INSTALACAO.md          # Guia passo a passo de instalação
+└── README.md                    # Este arquivo
+```
+
+---
+
+## 🚀 Instalação Rápida
+
+### Pré-requisitos
+- Conta Google @ifms.edu.br
+- Acesso ao Google Drive
+- Permissões para criar Google Sheets
+
+### Passos Básicos
+
+1. **Criar Google Sheets** com nome `REQ_Teko_Pora`
+2. **Criar 9 abas:** Config, Usuarios, Metas, Rubricas, Enderecos, Numeracao, Requisicoes, Itens, Logs
+3. **Acessar Apps Script:** Extensões → Apps Script
+4. **Criar arquivos:**
+   - Code.gs (copiar código do repositório)
+   - Index.html (copiar código do repositório)
+5. **Executar função** `setupInicial()` uma vez
+6. **Implantar como Aplicativo Web**
+7. **Acessar URL** gerado
+
+📖 **Para instruções detalhadas, consulte: [GUIA_INSTALACAO.md](GUIA_INSTALACAO.md)**
+
+---
+
+## 📊 Estrutura da Planilha
+
+O sistema utiliza uma planilha Google Sheets com 9 abas:
+
+| Aba | Descrição |
+|-----|-----------|
+| **Config** | Configurações gerais (emails, projeto, fuso horário) |
+| **Usuarios** | Cadastro de usuários e perfis |
+| **Metas** | 9 metas do Programa Teko Porã |
+| **Rubricas** | Rubricas orçamentárias |
+| **Enderecos** | Endereços de entrega cadastrados |
+| **Numeracao** | Controle de numeração das requisições |
+| **Requisicoes** | Armazena todas as requisições (33 colunas) |
+| **Itens** | Itens de cada requisição |
+| **Logs** | Registro de todas as ações do sistema |
+
+📖 **Para detalhes completos, consulte: [ESTRUTURA_PLANILHA.md](ESTRUTURA_PLANILHA.md)**
+
+---
+
+## 🎨 Interface do Sistema
+
+A interface é moderna, responsiva e intuitiva:
+
+- **Design Clean:** Interface profissional com cores institucionais
+- **Responsivo:** Funciona em desktop, tablet e celular
+- **Modais:** Formulários em janelas modais para melhor UX
+- **Validações em Tempo Real:** Feedback imediato ao usuário
+- **Tabelas Responsivas:** Adaptam-se a diferentes tamanhos de tela
+
+---
+
+## 🔐 Segurança
+
+- ✅ Acesso restrito a usuários cadastrados
+- ✅ Validação de perfis de acesso
+- ✅ Proteção contra edição não autorizada
+- ✅ Escape de HTML para prevenir XSS
+- ✅ Validação de dados no servidor
+- ✅ Logs de auditoria de todas as ações
+
+---
+
+## 📝 Campos da Requisição
+
+### Campos Obrigatórios:
+- ✅ Tipo de Requisição
+- ✅ Meta/Etapa
+- ✅ Rubrica (seleção pela descrição)
+- ✅ Endereço de Entrega
+- ✅ Justificativa da Forma de Avaliação
+- ✅ Pelo menos 1 item
+
+### Campos por Item (Obrigatórios):
+- ✅ Descrição Detalhada
+- ✅ Unidade (un, kg, m, etc.)
+- ✅ Quantidade (numérica, 2 casas decimais)
+- ✅ Valor Unitário (numérica, 2 casas decimais)
+
+### Campos Calculados Automaticamente:
+- 🔢 Número da Requisição (001/2025)
+- 🔢 Código da Rubrica
+- 🔢 Valor Total do Item (Quantidade × Valor Unitário)
+- 📅 Data de Cadastro
+- 📅 Data de Última Atualização
+
+---
+
+## 🌟 Diferenciais do Sistema
+
+### Para o Requisitante
+- Interface intuitiva e fácil de usar
+- Salvar rascunhos e continuar depois
+- Adicionar quantos itens quiser
+- Upload de documentos anexos via links
+- Feedback claro sobre status da requisição
+
+### Para o Administrador
+- Visão completa de todas as requisições
+- Filtros por status
+- Aprovação/rejeição com justificativa
+- Atribuição automática de cadastradores
+- Notificações por e-mail
+
+### Para o Cadastrador
+- Lista apenas de requisições atribuídas
+- Interface específica para cadastro FADEX
+- Controle de Número WEB e Protocolo
+- Upload de comprovantes
+- Notificação ao coordenador
+
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+- **Backend:** Google Apps Script (JavaScript)
+- **Frontend:** HTML5 + CSS3 + JavaScript
+- **Banco de Dados:** Google Sheets
+- **E-mail:** Gmail API (MailApp)
+- **Hospedagem:** Google Apps Script Web App
+
+---
+
+## 📈 Roadmap Futuro
+
+Possíveis melhorias para versões futuras:
+
+- [ ] Dashboard com gráficos e estatísticas
+- [ ] Exportação para PDF das requisições
+- [ ] Upload direto de arquivos (via Google Drive)
+- [ ] Relatórios gerenciais
+- [ ] Integração direta com API FADEX
+- [ ] App mobile (PWA)
+- [ ] Assinatura digital
+- [ ] Controle de orçamento por rubrica
+
+---
+
+## 👨‍💻 Desenvolvimento
+
+### Estrutura do Código
+
+O código é organizado em seções lógicas:
+
+**Code.gs:**
+- Constantes e configurações
+- Funções utilitárias
+- Gerenciamento de usuários
+- CRUD de requisições
+- Workflow de aprovação
+- Envio de e-mails
+- Setup inicial
+
+**Index.html:**
+- Estilos CSS (responsivo)
+- Interface HTML (modais, tabelas, formulários)
+- JavaScript (lógica client-side)
+- Integração com Google Apps Script
+
+### Padrões de Código
+
+- ✅ Código comentado e documentado
+- ✅ Funções com JSDoc
+- ✅ Validações client-side e server-side
+- ✅ Tratamento de erros
+- ✅ Escape de HTML
+- ✅ Locks para evitar race conditions
+- ✅ Logs de auditoria
+
+---
+
+## 📞 Suporte
+
+Em caso de dúvidas, problemas ou sugestões:
+
+- **Email:** teko.pora@ifms.edu.br
+- **Responsável Técnico:** fernando.alves@ifms.edu.br
+
+---
+
+## 📄 Licença
+
+Este sistema foi desenvolvido exclusivamente para o Programa Teko Porã do IFMS.
+
+---
+
+## 🙏 Agradecimentos
+
+Desenvolvido para apoiar o importante trabalho do **Programa Teko Porã** em prol das comunidades indígenas de Mato Grosso do Sul.
+
+---
+
+## 📚 Documentação Completa
+
+- 📖 [GUIA_INSTALACAO.md](GUIA_INSTALACAO.md) - Instalação passo a passo
+- 📖 [ESTRUTURA_PLANILHA.md](ESTRUTURA_PLANILHA.md) - Estrutura completa da planilha
+- 💻 [Code.gs](Code.gs) - Código backend comentado
+- 🎨 [Index.html](Index.html) - Interface web
+
+---
+
+**Desenvolvido com ❤️ para o Programa Teko Porã - IFMS**
+
+**Versão 2.0 | Janeiro 2025**
+
+---
+
+## 🚀 Quick Start
+
+```bash
+# 1. Crie a planilha REQ_Teko_Pora no Google Sheets
+# 2. Crie as 9 abas necessárias
+# 3. Acesse Extensões → Apps Script
+# 4. Crie Code.gs e Index.html
+# 5. Execute setupInicial()
+# 6. Implante como Aplicativo Web
+# 7. Acesse o URL e comece a usar!
+```
+
+✅ **Sistema pronto para produção!**
