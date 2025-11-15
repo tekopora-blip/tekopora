@@ -324,6 +324,7 @@
         'Ativo': usuario.ativo !== undefined ? (usuario.ativo ? 'Sim' : 'Não') : 'N/A',
         'Domínio do email': usuario.email ? usuario.email.split('@')[1] : 'N/A',
         'É do IFMS': usuario.email && usuario.email.toLowerCase().endsWith('@ifms.edu.br') ? 'Sim' : 'Não',
+        'Erro técnico': usuario.erro || 'Nenhum',
         'URL atual': window.location.href,
         'Timestamp': new Date().toLocaleString('pt-BR')
       };
@@ -361,9 +362,21 @@
     function mostrarInfoUsuario(usuario) {
       const userInfoArea = document.getElementById('userInfoArea');
 
-      if (!usuario || !usuario.email) {
+      if (!usuario) {
         mostrarAlerta('Não foi possível obter informações do usuário. Recarregue a página.', 'error');
-        mostrarDebug(usuario || {});
+        mostrarDebug({});
+        return;
+      }
+
+      // Se há um erro no objeto usuario, mostra
+      if (usuario.erro) {
+        mostrarAlerta('ERRO TÉCNICO: ' + usuario.erro, 'error');
+        mostrarDebug(usuario);
+      }
+
+      if (!usuario.email) {
+        mostrarAlerta('Email não foi detectado. Verifique se você está logado no Google e se o sistema tem permissões corretas.', 'error');
+        mostrarDebug(usuario);
         return;
       }
 
@@ -371,7 +384,7 @@
       let btnDisabled = '';
 
       if (usuario.perfil === 'NAO_CADASTRADO' || !usuario.ativo) {
-        const isIFMS = usuario.email.toLowerCase().endsWith('@ifms.edu.br');
+        const isIFMS = usuario.email && usuario.email.toLowerCase().endsWith('@ifms.edu.br');
 
         if (isIFMS) {
           mostrarAlerta(

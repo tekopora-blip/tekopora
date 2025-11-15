@@ -252,66 +252,144 @@ function logAcao(email, acao, detalhes) {
  * @returns {Object} Dados do usuário {email, nome, perfil, ativo}
  */
 function getUsuarioAtual() {
-  const email = Session.getActiveUser().getEmail();
-
-  // Log para debug
-  console.log('getUsuarioAtual() - Email detectado:', email);
-
-  let sh;
   try {
-    sh = getSheet(ABA_USUARIOS);
-  } catch (e) {
-    console.error('Erro ao acessar aba Usuarios:', e);
-    return { email: email, nome: email, perfil: 'NAO_CADASTRADO', ativo: false };
-  }
+    // Tenta obter email do usuário
+    const email = Session.getActiveUser().getEmail();
 
-  const lastRow = sh.getLastRow();
-  if (lastRow < 2) {
-    console.log('Nenhum usuário cadastrado ainda');
-    return { email: email, nome: email, perfil: 'NAO_CADASTRADO', ativo: false };
-  }
+    // Log para debug
+    console.log('getUsuarioAtual() - Email detectado:', email);
 
-  const vals = sh.getRange(2, 1, lastRow - 1, 4).getValues();
-  const emailNorm = normalizeEmail(email);
-
-  // Busca o usuário na lista
-  for (let i = 0; i < vals.length; i++) {
-    if (normalizeEmail(vals[i][0]) === emailNorm && vals[i][3] !== false) {
-      console.log('Usuário encontrado:', vals[i][1], 'Perfil:', vals[i][2]);
+    // Verifica se email foi detectado
+    if (!email || email.trim() === '') {
+      console.error('Session.getActiveUser().getEmail() retornou vazio');
       return {
-        email: vals[i][0],
-        nome: vals[i][1],
-        perfil: vals[i][2],
-        ativo: vals[i][3]
+        email: '',
+        nome: 'Usuário não identificado',
+        perfil: 'NAO_CADASTRADO',
+        ativo: false,
+        erro: 'Email não detectado pelo Google Apps Script. Verifique as permissões de autenticação.'
       };
     }
-  }
 
-  // Se não encontrou, verifica se é email do IFMS
-  if (email.toLowerCase().endsWith('@ifms.edu.br')) {
-    console.log('Email do IFMS detectado - Auto-cadastrando como REQUISITANTE');
+    let sh;
+    try {
+      sh = getSheet(ABA_USUARIOS);
+    } catch (e) {
+      console.error('Erro ao acessar aba Usuarios:', e);
+      return {
+        email: email,
+        nome: email,
+        perfil: 'NAO_CADASTRADO',
+        ativo: false,
+        erro: 'Aba Usuarios não encontrada. Execute setupInicial() primeiro.'
+      };
+    }
 
-    // Extrai nome do email (parte antes do @)
-    const nomeExtraido = email.split('@')[0].split('.').map(
-      parte => parte.charAt(0).toUpperCase() + parte.slice(1)
-    ).join(' ');
+    const lastRow = sh.getLastRow();
+    if (lastRow < 2) {
+      console.log('Nenhum usuário cadastrado ainda');
 
-    // Adiciona usuário na planilha como REQUISITANTE ativo
-    sh.appendRow([email, nomeExtraido, PERFIL.REQUISITANTE, true]);
+      // Se é do IFMS, tenta auto-cadastrar
+      if (email.toLowerCase().endsWith('@ifms.edu.br')) {
+        try {
+          console.log('Email do IFMS detectado - Auto-cadastrando como REQUISITANTE');
 
-    // Registra no log
-    registrarLog(email, 'AUTO_CADASTRO', `Usuário auto-cadastrado como REQUISITANTE`);
+          const nomeExtraido = email.split('@')[0].split('.').map(
+            parte => parte.charAt(0).toUpperCase() + parte.slice(1)
+          ).join(' ');
 
+          sh.appendRow([email, nomeExtraido, PERFIL.REQUISITANTE, true]);
+          registrarLog(email, 'AUTO_CADASTRO', `Usuário auto-cadastrado como REQUISITANTE`);
+
+          return {
+            email: email,
+            nome: nomeExtraido,
+            perfil: PERFIL.REQUISITANTE,
+            ativo: true
+          };
+        } catch (e) {
+          console.error('Erro ao auto-cadastrar:', e);
+          return {
+            email: email,
+            nome: email,
+            perfil: 'NAO_CADASTRADO',
+            ativo: false,
+            erro: 'Erro ao auto-cadastrar: ' + e.message
+          };
+        }
+      }
+
+      return {
+        email: email,
+        nome: email,
+        perfil: 'NAO_CADASTRADO',
+        ativo: false
+      };
+    }
+
+    const vals = sh.getRange(2, 1, lastRow - 1, 4).getValues();
+    const emailNorm = normalizeEmail(email);
+
+    // Busca o usuário na lista
+    for (let i = 0; i < vals.length; i++) {
+      if (normalizeEmail(vals[i][0]) === emailNorm && vals[i][3] !== false) {
+        console.log('Usuário encontrado:', vals[i][1], 'Perfil:', vals[i][2]);
+        return {
+          email: vals[i][0],
+          nome: vals[i][1],
+          perfil: vals[i][2],
+          ativo: vals[i][3]
+        };
+      }
+    }
+
+    // Se não encontrou, verifica se é email do IFMS
+    if (email.toLowerCase().endsWith('@ifms.edu.br')) {
+      try {
+        console.log('Email do IFMS detectado - Auto-cadastrando como REQUISITANTE');
+
+        // Extrai nome do email (parte antes do @)
+        const nomeExtraido = email.split('@')[0].split('.').map(
+          parte => parte.charAt(0).toUpperCase() + parte.slice(1)
+        ).join(' ');
+
+        // Adiciona usuário na planilha como REQUISITANTE ativo
+        sh.appendRow([email, nomeExtraido, PERFIL.REQUISITANTE, true]);
+
+        // Registra no log
+        registrarLog(email, 'AUTO_CADASTRO', `Usuário auto-cadastrado como REQUISITANTE`);
+
+        return {
+          email: email,
+          nome: nomeExtraido,
+          perfil: PERFIL.REQUISITANTE,
+          ativo: true
+        };
+      } catch (e) {
+        console.error('Erro ao auto-cadastrar:', e);
+        return {
+          email: email,
+          nome: email,
+          perfil: 'NAO_CADASTRADO',
+          ativo: false,
+          erro: 'Erro ao auto-cadastrar: ' + e.message
+        };
+      }
+    }
+
+    console.log('Usuário não cadastrado e não é do IFMS');
+    return { email: email, nome: email, perfil: 'NAO_CADASTRADO', ativo: false };
+
+  } catch (error) {
+    console.error('Erro crítico em getUsuarioAtual():', error);
     return {
-      email: email,
-      nome: nomeExtraido,
-      perfil: PERFIL.REQUISITANTE,
-      ativo: true
+      email: '',
+      nome: 'Erro ao carregar usuário',
+      perfil: 'NAO_CADASTRADO',
+      ativo: false,
+      erro: 'Erro crítico: ' + error.message + ' | Stack: ' + error.stack
     };
   }
-
-  console.log('Usuário não cadastrado e não é do IFMS');
-  return { email: email, nome: email, perfil: 'NAO_CADASTRADO', ativo: false };
 }
 
 /**
@@ -937,15 +1015,67 @@ function doGet(e) {
  * Mostra tela de login
  */
 function mostrarTelaLogin(user) {
-  const template = HtmlService.createTemplateFromFile('Login');
+  try {
+    const template = HtmlService.createTemplateFromFile('Login');
 
-  template.dadosIniciais = {
-    usuario: user
-  };
+    // Garante que user é um objeto válido
+    const usuarioSeguro = user || {
+      email: '',
+      nome: 'Erro ao detectar usuário',
+      perfil: 'NAO_CADASTRADO',
+      ativo: false,
+      erro: 'Objeto user está undefined ou null'
+    };
 
-  return template.evaluate()
-    .setTitle('Login - Teko Porã')
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+    // Log para debug
+    console.log('mostrarTelaLogin() - Usuario:', JSON.stringify(usuarioSeguro));
+
+    template.dadosIniciais = {
+      usuario: usuarioSeguro
+    };
+
+    return template.evaluate()
+      .setTitle('Login - Teko Porã')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  } catch (error) {
+    console.error('Erro em mostrarTelaLogin():', error);
+
+    // Retorna HTML de erro direto
+    const htmlErro = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Erro - Teko Porã</title>
+  <style>
+    body { font-family: Arial; padding: 40px; background: #f5f5f5; }
+    .erro { background: #fff; padding: 30px; border-radius: 8px; max-width: 600px; margin: 0 auto; }
+    h1 { color: #dc3545; }
+    code { background: #f8f9fa; padding: 2px 6px; border-radius: 3px; }
+  </style>
+</head>
+<body>
+  <div class="erro">
+    <h1>❌ Erro ao Carregar Tela de Login</h1>
+    <p><strong>Mensagem:</strong> ${escapeHtml(error.message)}</p>
+    <p><strong>Stack:</strong> <code>${escapeHtml(error.stack || 'N/A')}</code></p>
+    <hr>
+    <h3>Passos para resolver:</h3>
+    <ol>
+      <li>Verifique se executou <code>setupInicial()</code> no Apps Script</li>
+      <li>Confirme que o ID da planilha está correto</li>
+      <li>Reimplante o aplicativo web</li>
+      <li>Limpe o cache e tente novamente</li>
+    </ol>
+    <p>Se o erro persistir, contate: <strong>teko.pora@ifms.edu.br</strong></p>
+  </div>
+</body>
+</html>`;
+
+    return HtmlService.createHtmlOutput(htmlErro)
+      .setTitle('Erro - Teko Porã')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  }
 }
 
 /**
