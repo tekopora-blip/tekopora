@@ -253,23 +253,30 @@ function logAcao(email, acao, detalhes) {
 function getUsuarioAtual() {
   const email = Session.getActiveUser().getEmail();
 
+  // Log para debug
+  console.log('getUsuarioAtual() - Email detectado:', email);
+
   let sh;
   try {
     sh = getSheet(ABA_USUARIOS);
   } catch (e) {
+    console.error('Erro ao acessar aba Usuarios:', e);
     return { email: email, nome: email, perfil: 'NAO_CADASTRADO', ativo: false };
   }
 
   const lastRow = sh.getLastRow();
   if (lastRow < 2) {
+    console.log('Nenhum usuário cadastrado ainda');
     return { email: email, nome: email, perfil: 'NAO_CADASTRADO', ativo: false };
   }
 
   const vals = sh.getRange(2, 1, lastRow - 1, 4).getValues();
   const emailNorm = normalizeEmail(email);
 
+  // Busca o usuário na lista
   for (let i = 0; i < vals.length; i++) {
     if (normalizeEmail(vals[i][0]) === emailNorm && vals[i][3] !== false) {
+      console.log('Usuário encontrado:', vals[i][1], 'Perfil:', vals[i][2]);
       return {
         email: vals[i][0],
         nome: vals[i][1],
@@ -278,6 +285,31 @@ function getUsuarioAtual() {
       };
     }
   }
+
+  // Se não encontrou, verifica se é email do IFMS
+  if (email.toLowerCase().endsWith('@ifms.edu.br')) {
+    console.log('Email do IFMS detectado - Auto-cadastrando como REQUISITANTE');
+
+    // Extrai nome do email (parte antes do @)
+    const nomeExtraido = email.split('@')[0].split('.').map(
+      parte => parte.charAt(0).toUpperCase() + parte.slice(1)
+    ).join(' ');
+
+    // Adiciona usuário na planilha como REQUISITANTE ativo
+    sh.appendRow([email, nomeExtraido, PERFIL.REQUISITANTE, true]);
+
+    // Registra no log
+    registrarLog(email, 'AUTO_CADASTRO', `Usuário auto-cadastrado como REQUISITANTE`);
+
+    return {
+      email: email,
+      nome: nomeExtraido,
+      perfil: PERFIL.REQUISITANTE,
+      ativo: true
+    };
+  }
+
+  console.log('Usuário não cadastrado e não é do IFMS');
   return { email: email, nome: email, perfil: 'NAO_CADASTRADO', ativo: false };
 }
 

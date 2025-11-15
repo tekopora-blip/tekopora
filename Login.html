@@ -266,7 +266,19 @@
           <div class="info-box-title">ℹ️ Acesso Restrito</div>
           <div class="info-box-text">
             Este sistema é exclusivo para usuários cadastrados do IFMS.
-            Apenas contas @ifms.edu.br têm acesso autorizado.
+            Usuários com email @ifms.edu.br são cadastrados automaticamente como REQUISITANTE.
+          </div>
+        </div>
+
+        <div id="debugArea" style="display: none; margin-top: 20px;">
+          <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 6px; padding: 15px;">
+            <div style="font-weight: 600; color: #495057; margin-bottom: 10px; font-size: 13px;">
+              🔍 Informações de Debug
+            </div>
+            <div id="debugContent" style="font-size: 12px; font-family: monospace; color: #6c757d; line-height: 1.6;"></div>
+            <button onclick="copiarDebug()" style="margin-top: 10px; padding: 6px 12px; font-size: 11px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer;">
+              📋 Copiar Informações
+            </button>
           </div>
         </div>
       </div>
@@ -301,11 +313,57 @@
       `;
     }
 
+    function mostrarDebug(usuario) {
+      const debugArea = document.getElementById('debugArea');
+      const debugContent = document.getElementById('debugContent');
+
+      const debugInfo = {
+        'Email detectado': usuario.email || 'N/A',
+        'Nome': usuario.nome || 'N/A',
+        'Perfil': usuario.perfil || 'N/A',
+        'Ativo': usuario.ativo !== undefined ? (usuario.ativo ? 'Sim' : 'Não') : 'N/A',
+        'Domínio do email': usuario.email ? usuario.email.split('@')[1] : 'N/A',
+        'É do IFMS': usuario.email && usuario.email.toLowerCase().endsWith('@ifms.edu.br') ? 'Sim' : 'Não',
+        'URL atual': window.location.href,
+        'Timestamp': new Date().toLocaleString('pt-BR')
+      };
+
+      let html = '';
+      for (const [chave, valor] of Object.entries(debugInfo)) {
+        html += `<div><strong>${chave}:</strong> ${valor}</div>`;
+      }
+
+      debugContent.innerHTML = html;
+      debugArea.style.display = 'block';
+    }
+
+    function copiarDebug() {
+      const debugContent = document.getElementById('debugContent');
+      const text = debugContent.innerText;
+
+      // Copia para clipboard
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => {
+          alert('✅ Informações copiadas para a área de transferência!');
+        });
+      } else {
+        // Fallback para navegadores antigos
+        const textarea = document.createElement('textarea');
+        textarea.value = text;
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+        alert('✅ Informações copiadas!');
+      }
+    }
+
     function mostrarInfoUsuario(usuario) {
       const userInfoArea = document.getElementById('userInfoArea');
 
       if (!usuario || !usuario.email) {
         mostrarAlerta('Não foi possível obter informações do usuário. Recarregue a página.', 'error');
+        mostrarDebug(usuario || {});
         return;
       }
 
@@ -313,12 +371,23 @@
       let btnDisabled = '';
 
       if (usuario.perfil === 'NAO_CADASTRADO' || !usuario.ativo) {
-        mostrarAlerta(
-          'Seu e-mail não está cadastrado no sistema. Entre em contato com o administrador (teko.pora@ifms.edu.br) para solicitar acesso.',
-          'error'
-        );
+        const isIFMS = usuario.email.toLowerCase().endsWith('@ifms.edu.br');
+
+        if (isIFMS) {
+          mostrarAlerta(
+            'Seu email do IFMS foi detectado, mas houve um erro no auto-cadastro. Verifique se a função setupInicial() foi executada corretamente. Se o problema persistir, contate o administrador.',
+            'error'
+          );
+        } else {
+          mostrarAlerta(
+            'Apenas emails @ifms.edu.br têm acesso ao sistema. Entre em contato com o administrador (teko.pora@ifms.edu.br) se você deveria ter acesso.',
+            'error'
+          );
+        }
+
         btnDisabled = 'disabled';
         statusHtml = '<div style="color: #dc3545; font-weight: 600; margin-top: 8px;">❌ Acesso Negado</div>';
+        mostrarDebug(usuario);
       } else {
         statusHtml = `
           <div style="color: #28a745; font-weight: 600; margin-top: 8px;">✅ Acesso Autorizado</div>
