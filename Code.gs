@@ -19,6 +19,7 @@
 // ============================================================================
 
 const NOME_PLANILHA = 'REQ_Teko_Pora';
+const ID_PLANILHA = '1b7IoKAIhnmxKWb5DfGqQBc7pyA89_C4Xbunyy4Ipyls';
 
 // Nomes das abas
 const ABA_CONFIG = 'Config';
@@ -100,11 +101,11 @@ const COL_REQ = {
 // ============================================================================
 
 /**
- * Obtém a planilha ativa
- * @returns {Spreadsheet} Planilha ativa
+ * Obtém a planilha do sistema pelo ID
+ * @returns {Spreadsheet} Planilha do sistema
  */
 function getSS() {
-  return SpreadsheetApp.getActive();
+  return SpreadsheetApp.openById(ID_PLANILHA);
 }
 
 /**
