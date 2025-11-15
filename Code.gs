@@ -562,8 +562,296 @@ function validarDadosRequisicao(dados) {
   });
 }
 
-// ... [resto do código continua igual]
-// (Por questão de espaço, vou manter apenas as partes essenciais modificadas)
+// ============================================================================
+// CRUD DE REQUISIÇÕES - FUNÇÕES AUXILIARES
+// ============================================================================
+
+function prepararDadosEndereco(enderecoId, dadosEnderecoNovo) {
+  let enderecoIdFinal = enderecoId;
+  if (!enderecoIdFinal && dadosEnderecoNovo) {
+    enderecoIdFinal = salvarNovoEndereco(dadosEnderecoNovo);
+  }
+  const listaEnd = listarEnderecos();
+  const endObj = listaEnd.find(e => String(e.id) === String(enderecoIdFinal)) || {};
+  return { enderecoId: enderecoIdFinal, endObj };
+}
+
+function prepararDadosRubrica(rubricaCodigo) {
+  const rubricas = listarRubricas();
+  const rubObj = rubricas.find(r => r.codigo === rubricaCodigo);
+  if (!rubObj) {
+    throw new Error(`Rubrica "${rubricaCodigo}" não encontrada.`);
+  }
+  return rubObj;
+}
+
+function salvarItensRequisicao(shItens, id, itens) {
+  itens.forEach((item, idx) => {
+    if (!item.descricaoDetalhada) return;
+    const qt = validarNumeroPositivo(item.quantidade, 'Quantidade');
+    const vu = validarNumeroPositivo(item.valorUnitario, 'Valor Unitário');
+    const vt = qt * vu;
+    shItens.appendRow([
+      id, idx + 1, item.descricaoDetalhada, item.unidade, qt, vu, vt,
+      item.finalidade || '', item.justificativaTecnica || ''
+    ]);
+  });
+}
+
+function removerItensRequisicao(shItens, id) {
+  const lastRow = shItens.getLastRow();
+  if (lastRow < 2) return;
+  const vals = shItens.getRange(2, 1, lastRow - 1, 9).getValues();
+  const linhasExcluir = [];
+  for (let i = 0; i < vals.length; i++) {
+    if (String(vals[i][0]) === String(id)) {
+      linhasExcluir.push(i + 2);
+    }
+  }
+  for (let i = linhasExcluir.length - 1; i >= 0; i--) {
+    shItens.deleteRow(linhasExcluir[i]);
+  }
+}
+
+function criarNovaRequisicao(dados, user, cfg) {
+  validarDadosRequisicao(dados);
+  const shReq = getSheet(ABA_REQUISICOES);
+  const shItens = getSheet(ABA_ITENS);
+  const id = gerarIdRequisicao();
+  const numero = gerarNumeroRequisicao(dados.tipoRequisicao);
+  const agora = getDataAtualMS();
+  const { enderecoId, endObj } = prepararDadosEndereco(dados.enderecoId, dados.enderecoNovo);
+  const rubObj = prepararDadosRubrica(dados.rubricaCodigo);
+
+  shReq.appendRow([
+    id, numero, dados.tipoRequisicao, STATUS.RASCUNHO,
+    cfg.PROJETO || '11986-5 - CONTRATO N° 62/2024 - PROJETO TEKO PORÃ',
+    agora, dados.limiteAtendimento || '', dados.meta, rubObj.codigo, rubObj.descricao,
+    enderecoId || '', endObj.nome || '', endObj.logradouro || '', endObj.numero || '',
+    endObj.bairro || '', endObj.cidade || '', endObj.uf || '', endObj.cep || '',
+    endObj.complemento || '', dados.formaAvaliacao || '', dados.justificativaForma || '',
+    dados.observacoes || '', dados.linksAnexos || '', user.email, user.nome,
+    '', '', '', '', '', '', '', agora
+  ]);
+
+  salvarItensRequisicao(shItens, id, dados.itens);
+  logAcao(user.email, 'SALVAR_NOVA_REQUISICAO', `ID=${id}, Numero=${numero}`);
+  return { id: id, numero: numero };
+}
+
+function atualizarRequisicao(dados, user) {
+  validarDadosRequisicao(dados);
+  const { row, data, sheet: shReq } = buscarRequisicao(dados.id);
+  const shItens = getSheet(ABA_ITENS);
+  const statusAtual = data[COL_REQ.STATUS];
+  const numero = data[COL_REQ.NUMERO];
+
+  if (![STATUS.RASCUNHO, STATUS.EM_CORRECAO].includes(statusAtual) && !isPerfil(PERFIL.ADMIN)) {
+    throw new Error('Não é possível editar esta requisição neste status.');
+  }
+
+  const { enderecoId, endObj } = prepararDadosEndereco(dados.enderecoId, dados.enderecoNovo);
+  const rubObj = prepararDadosRubrica(dados.rubricaCodigo);
+  const agora = getDataAtualMS();
+
+  shReq.getRange(row, 7, 1, 16).setValues([[
+    dados.limiteAtendimento || '', dados.meta, rubObj.codigo, rubObj.descricao,
+    enderecoId || '', endObj.nome || '', endObj.logradouro || '', endObj.numero || '',
+    endObj.bairro || '', endObj.cidade || '', endObj.uf || '', endObj.cep || '',
+    endObj.complemento || '', dados.formaAvaliacao || '', dados.justificativaForma || '',
+    dados.observacoes || ''
+  ]]);
+
+  shReq.getRange(row, 23).setValue(dados.linksAnexos || '');
+  shReq.getRange(row, 33).setValue(agora);
+  removerItensRequisicao(shItens, dados.id);
+  salvarItensRequisicao(shItens, dados.id, dados.itens);
+  logAcao(user.email, 'ATUALIZAR_REQUISICAO', `ID=${dados.id}`);
+  return { id: dados.id, numero: numero };
+}
+
+function salvarRequisicao(dados) {
+  const user = validarUsuarioAtivo();
+  const cfg = getConfigMap();
+  if (!dados.id) {
+    return criarNovaRequisicao(dados, user, cfg);
+  } else {
+    return atualizarRequisicao(dados, user);
+  }
+}
+
+function enviarRequisicao(id) {
+  const user = validarUsuarioAtivo();
+  const { row, data, sheet: shReq } = buscarRequisicao(id);
+  const emailReq = data[COL_REQ.REQUISITANTE_EMAIL];
+  const statusAtual = data[COL_REQ.STATUS];
+  const numero = data[COL_REQ.NUMERO];
+  const tipo = data[COL_REQ.TIPO];
+
+  if (normalizeEmail(emailReq) !== normalizeEmail(user.email) && !isPerfil(PERFIL.ADMIN)) {
+    throw new Error('Apenas o requisitante pode enviar esta requisição.');
+  }
+
+  if (![STATUS.RASCUNHO, STATUS.EM_CORRECAO].includes(statusAtual)) {
+    throw new Error(`Status "${statusAtual}" não permite envio.`);
+  }
+
+  shReq.getRange(row, COL_REQ.STATUS + 1).setValue(STATUS.ENVIADA);
+  shReq.getRange(row, COL_REQ.ULTIMA_ATUALIZACAO + 1).setValue(getDataAtualMS());
+
+  const cfg = getConfigMap();
+  try {
+    const assunto = `[TEKO PORÃ REQ-${numero}] Nova requisição - ${tipo}`;
+    const corpo = `Nova requisição ${numero} cadastrada por ${user.nome} (${user.email})`;
+    MailApp.sendEmail(cfg.EMAIL_ADMIN || 'teko.pora@ifms.edu.br', assunto, corpo);
+  } catch (e) {
+    console.error('Erro ao enviar email:', e);
+  }
+
+  logAcao(user.email, 'ENVIAR_REQUISICAO', `ID=${id}, Numero=${numero}`);
+  return true;
+}
+
+function listarRequisicoesParaAdmin() {
+  if (!isPerfil(PERFIL.ADMIN)) {
+    throw new Error('Acesso restrito ao administrador.');
+  }
+  const sh = getSheet(ABA_REQUISICOES);
+  const lastRow = sh.getLastRow();
+  if (lastRow < 2) return [];
+  const vals = sh.getRange(2, 1, lastRow - 1, 33).getValues();
+  return vals.map(r => ({
+    id: r[COL_REQ.ID], numero: r[COL_REQ.NUMERO], tipo: r[COL_REQ.TIPO],
+    status: r[COL_REQ.STATUS], projeto: r[COL_REQ.PROJETO],
+    dataCadastro: r[COL_REQ.DATA_CADASTRO], meta: r[COL_REQ.META],
+    rubrica: `${r[COL_REQ.RUBRICA_CODIGO]} - ${r[COL_REQ.RUBRICA_DESC]}`,
+    requisitante: `${r[COL_REQ.REQUISITANTE_NOME]} (${r[COL_REQ.REQUISITANTE_EMAIL]})`
+  }));
+}
+
+function listarCadastradoresParaAdmin() {
+  if (!isPerfil(PERFIL.ADMIN)) {
+    throw new Error('Acesso restrito ao administrador.');
+  }
+  const sh = getSheet(ABA_USUARIOS);
+  const lastRow = sh.getLastRow();
+  if (lastRow < 2) return [];
+  const vals = sh.getRange(2, 1, lastRow - 1, 4).getValues();
+  return vals
+    .filter(r => r[2] === PERFIL.CADASTRADOR && r[3] !== false)
+    .map(r => ({ email: r[0], nome: r[1] }));
+}
+
+function decidirRequisicaoAdmin(id, acao, justificativa, emailCadastrador) {
+  if (!isPerfil(PERFIL.ADMIN)) {
+    throw new Error('Acesso restrito ao administrador.');
+  }
+  const { row, data, sheet: shReq } = buscarRequisicao(id);
+  const statusAtual = data[COL_REQ.STATUS];
+  if (statusAtual !== STATUS.ENVIADA && statusAtual !== STATUS.EM_CORRECAO) {
+    throw new Error(`Status "${statusAtual}" não permite decisão administrativa.`);
+  }
+
+  let novoStatus;
+  if (acao === 'REJEITAR') novoStatus = STATUS.REJEITADA;
+  else if (acao === 'CORRIGIR') novoStatus = STATUS.EM_CORRECAO;
+  else if (acao === 'APROVAR') novoStatus = STATUS.APROVADA;
+  else throw new Error(`Ação inválida: ${acao}`);
+
+  shReq.getRange(row, COL_REQ.STATUS + 1).setValue(novoStatus);
+  shReq.getRange(row, COL_REQ.JUSTIFICATIVA_ADMIN + 1).setValue(justificativa || '');
+  shReq.getRange(row, COL_REQ.ULTIMA_ATUALIZACAO + 1).setValue(getDataAtualMS());
+
+  if (acao === 'APROVAR' && emailCadastrador) {
+    const cadastradores = listarCadastradoresParaAdmin();
+    const cadastrador = cadastradores.find(c => normalizeEmail(c.email) === normalizeEmail(emailCadastrador));
+    if (cadastrador) {
+      shReq.getRange(row, COL_REQ.CADASTRADOR_EMAIL + 1, 1, 2).setValues([[
+        cadastrador.email, cadastrador.nome
+      ]]);
+    }
+  }
+
+  logAcao(getUsuarioAtual().email, `DECISAO_ADMIN_${acao}`, `ID=${id}`);
+  return true;
+}
+
+function listarRequisicoesCadastrador() {
+  const user = getUsuarioAtual();
+  if (user.perfil !== PERFIL.CADASTRADOR) {
+    throw new Error('Acesso restrito a cadastradores.');
+  }
+  const sh = getSheet(ABA_REQUISICOES);
+  const lastRow = sh.getLastRow();
+  if (lastRow < 2) return [];
+  const vals = sh.getRange(2, 1, lastRow - 1, 33).getValues();
+  const userEmailNorm = normalizeEmail(user.email);
+  return vals
+    .filter(r =>
+      r[COL_REQ.STATUS] === STATUS.APROVADA &&
+      normalizeEmail(r[COL_REQ.CADASTRADOR_EMAIL]) === userEmailNorm
+    )
+    .map(r => ({
+      id: r[COL_REQ.ID], numero: r[COL_REQ.NUMERO], tipo: r[COL_REQ.TIPO],
+      meta: r[COL_REQ.META],
+      requisitante: `${r[COL_REQ.REQUISITANTE_NOME]} (${r[COL_REQ.REQUISITANTE_EMAIL]})`
+    }));
+}
+
+function atualizarDadosPortal(id, numeroWeb, protocolo, linkComprovante) {
+  const user = getUsuarioAtual();
+  if (user.perfil !== PERFIL.CADASTRADOR) {
+    throw new Error('Acesso restrito a cadastradores.');
+  }
+  if (!numeroWeb || !protocolo) {
+    throw new Error('Número WEB e Protocolo são obrigatórios.');
+  }
+  const { row, data, sheet: shReq } = buscarRequisicao(id);
+  if (data[COL_REQ.STATUS] !== STATUS.APROVADA) {
+    throw new Error('Status não permite atualização de portal.');
+  }
+  shReq.getRange(row, COL_REQ.NUMERO_WEB + 1, 1, 3).setValues([[
+    numeroWeb, protocolo, linkComprovante || ''
+  ]]);
+  shReq.getRange(row, COL_REQ.STATUS + 1).setValue(STATUS.CADASTRADA);
+  shReq.getRange(row, COL_REQ.ULTIMA_ATUALIZACAO + 1).setValue(getDataAtualMS());
+  logAcao(user.email, 'ATUALIZAR_PORTAL', `ID=${id}`);
+  return true;
+}
+
+function enviarParaAutorizacao(id) {
+  const user = getUsuarioAtual();
+  if (user.perfil !== PERFIL.CADASTRADOR) {
+    throw new Error('Acesso restrito a cadastradores.');
+  }
+  const { row, data, sheet: shReq } = buscarRequisicao(id);
+  if (data[COL_REQ.STATUS] !== STATUS.CADASTRADA) {
+    throw new Error('Status não permite envio para autorização.');
+  }
+  const agora = getDataAtualMS();
+  shReq.getRange(row, COL_REQ.STATUS + 1).setValue(STATUS.ENVIADA_AUTORIZACAO);
+  shReq.getRange(row, COL_REQ.DATA_ENVIO_AUTORIZACAO + 1).setValue(agora);
+  shReq.getRange(row, COL_REQ.ULTIMA_ATUALIZACAO + 1).setValue(agora);
+  logAcao(user.email, 'ENVIAR_AUTORIZACAO', `ID=${id}`);
+  return true;
+}
+
+function listarMinhasRequisicoes() {
+  const user = validarUsuarioAtivo();
+  const sh = getSheet(ABA_REQUISICOES);
+  const lastRow = sh.getLastRow();
+  if (lastRow < 2) return [];
+  const vals = sh.getRange(2, 1, lastRow - 1, 33).getValues();
+  const userEmailNorm = normalizeEmail(user.email);
+  return vals
+    .filter(r => normalizeEmail(r[COL_REQ.REQUISITANTE_EMAIL]) === userEmailNorm)
+    .map(r => ({
+      id: r[COL_REQ.ID], numero: r[COL_REQ.NUMERO], tipo: r[COL_REQ.TIPO],
+      status: r[COL_REQ.STATUS], dataCadastro: r[COL_REQ.DATA_CADASTRO],
+      meta: r[COL_REQ.META]
+    }));
+}
+
 
 // ============================================================================
 // INTERFACE WEB (doGet) - VERSÃO CORRIGIDA
