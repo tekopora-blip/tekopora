@@ -1,0 +1,1218 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Requisições de Compra - Teko Porã</title>
+    <style>
+      :root {
+        --cor-primaria: #8D2033;
+        --cor-borda: #ddd;
+        --cor-fundo-claro: #f3f3f3;
+        --cor-erro: #dc3545;
+        --cor-sucesso: #28a745;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        font-size: 13px;
+        margin: 16px;
+        line-height: 1.4;
+      }
+
+      h1 {
+        font-size: 20px;
+        margin-bottom: 4px;
+        color: var(--cor-primaria);
+      }
+
+      h2 {
+        font-size: 16px;
+        margin-top: 16px;
+        color: var(--cor-primaria);
+      }
+
+      .secao {
+        border: 1px solid var(--cor-borda);
+        padding: 12px;
+        margin-top: 16px;
+        border-radius: 4px;
+        background: #fff;
+      }
+
+      label {
+        display: block;
+        margin-top: 8px;
+        font-weight: bold;
+      }
+
+      input[type=text],
+      input[type=number],
+      input[type=date],
+      select,
+      textarea {
+        width: 100%;
+        padding: 6px;
+        font-size: 13px;
+        border: 1px solid var(--cor-borda);
+        border-radius: 3px;
+        font-family: Arial, sans-serif;
+      }
+
+      input[type=number] {
+        text-align: right;
+      }
+
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-top: 8px;
+        overflow-x: auto;
+        display: block;
+      }
+
+      @media (min-width: 768px) {
+        table {
+          display: table;
+        }
+      }
+
+      th,
+      td {
+        border: 1px solid var(--cor-borda);
+        padding: 6px;
+        font-size: 12px;
+        text-align: left;
+      }
+
+      th {
+        background: var(--cor-fundo-claro);
+        font-weight: bold;
+      }
+
+      .btn {
+        padding: 6px 12px;
+        font-size: 12px;
+        margin-right: 4px;
+        cursor: pointer;
+        border-radius: 3px;
+        border: none;
+        transition: opacity 0.2s;
+      }
+
+      .btn:hover:not(:disabled) {
+        opacity: 0.8;
+      }
+
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .btn-primary {
+        background: var(--cor-primaria);
+        color: #fff;
+      }
+
+      .btn-secondary {
+        background: var(--cor-fundo-claro);
+        border: 1px solid var(--cor-borda);
+        color: #333;
+      }
+
+      .tag {
+        padding: 3px 8px;
+        border-radius: 3px;
+        font-size: 11px;
+        font-weight: bold;
+        display: inline-block;
+      }
+
+      .status-RASCUNHO {
+        background: #fff3cd;
+        color: #856404;
+      }
+
+      .status-ENVIADA {
+        background: #cce5ff;
+        color: #004085;
+      }
+
+      .status-APROVADA {
+        background: #d4edda;
+        color: #155724;
+      }
+
+      .status-REJEITADA {
+        background: #f8d7da;
+        color: #721c24;
+      }
+
+      /* CORREÇÃO: Substituir espaço por hífen para classe CSS válida */
+      .status-EM-CORRECAO {
+        background: #fff3cd;
+        color: #856404;
+      }
+
+      .status-CADASTRADA {
+        background: #d1ecf1;
+        color: #0c5460;
+      }
+
+      .status-ENVIADA-AUTORIZACAO {
+        background: #e2e3e5;
+        color: #383d41;
+      }
+
+      .msg-erro {
+        color: var(--cor-erro);
+        margin-top: 8px;
+        font-weight: bold;
+      }
+
+      .msg-sucesso {
+        color: var(--cor-sucesso);
+        margin-top: 8px;
+        font-weight: bold;
+      }
+
+      .loading {
+        opacity: 0.6;
+        pointer-events: none;
+      }
+
+      .campo-obrigatorio::after {
+        content: ' *';
+        color: var(--cor-erro);
+      }
+
+      .input-error {
+        border-color: var(--cor-erro);
+        background: #fff5f5;
+      }
+
+      /* Responsividade */
+      @media (max-width: 768px) {
+        body {
+          margin: 8px;
+        }
+
+        table {
+          font-size: 10px;
+        }
+
+        .btn {
+          font-size: 11px;
+          padding: 5px 8px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <script>
+      // Dados iniciais vindos do servidor
+      const dadosIniciais = <?= JSON.stringify(dadosIniciais) ?>;
+
+      // Estado da aplicação
+      const AppState = {
+        requisicaoAtual: null,
+        loading: false
+      };
+
+      // Constantes
+      const PERFIL = {
+        ADMIN: 'ADMIN',
+        REQUISITANTE: 'REQUISITANTE',
+        CADASTRADOR: 'CADASTRADOR'
+      };
+
+      const STATUS = {
+        RASCUNHO: 'RASCUNHO',
+        ENVIADA: 'ENVIADA',
+        EM_CORRECAO: 'EM CORREÇÃO',
+        REJEITADA: 'REJEITADA',
+        APROVADA: 'APROVADA',
+        CADASTRADA: 'CADASTRADA',
+        ENVIADA_AUTORIZACAO: 'ENVIADA AUTORIZAÇÃO'
+      };
+
+      // Utilitários de segurança
+      function escapeHtml(text) {
+        if (text === null || text === undefined) return '';
+        const div = document.createElement('div');
+        div.textContent = String(text);
+        return div.innerHTML;
+      }
+
+      function sanitizeNumber(value) {
+        // CORREÇÃO: Substituir TODAS as vírgulas, não apenas a primeira
+        return parseFloat(String(value).replace(/,/g, '.')) || 0;
+      }
+
+      function formatarMoeda(valor) {
+        return Number(valor).toLocaleString('pt-BR', {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        });
+      }
+
+      function formatarData(data) {
+        if (!data) return '';
+        try {
+          return new Date(data).toLocaleDateString('pt-BR');
+        } catch (e) {
+          return '';
+        }
+      }
+
+      // Utilitários de DOM
+      function getElementById(id) {
+        const el = document.getElementById(id);
+        if (!el) {
+          console.error(`Elemento #${id} não encontrado`);
+        }
+        return el;
+      }
+
+      function setElementText(id, text) {
+        const el = getElementById(id);
+        if (el) el.textContent = escapeHtml(text);
+      }
+
+      function setElementValue(id, value) {
+        const el = getElementById(id);
+        if (el) el.value = value || '';
+      }
+
+      function getElementValue(id) {
+        const el = getElementById(id);
+        return el ? el.value : '';
+      }
+
+      function showElement(id) {
+        const el = getElementById(id);
+        if (el) el.style.display = 'block';
+      }
+
+      function hideElement(id) {
+        const el = getElementById(id);
+        if (el) el.style.display = 'none';
+      }
+
+      function setLoading(isLoading) {
+        AppState.loading = isLoading;
+        document.body.classList.toggle('loading', isLoading);
+      }
+
+      // CORREÇÃO: Normalizar status para classe CSS válida (sem espaços)
+      function statusParaClasse(status) {
+        return String(status).replace(/\s+/g, '-');
+      }
+
+      // Exibição de mensagens
+      function mostrarMensagem(containerId, mensagem, tipo = 'erro') {
+        const el = getElementById(containerId);
+        if (!el) return;
+
+        el.textContent = mensagem;
+        el.className = tipo === 'erro' ? 'msg-erro' : 'msg-sucesso';
+      }
+
+      function limparMensagem(containerId) {
+        const el = getElementById(containerId);
+        if (el) el.textContent = '';
+      }
+
+      // Validações
+      function validarCamposObrigatorios() {
+        const erros = [];
+
+        if (!getElementValue('tipoRequisicao')) {
+          erros.push('Tipo de Requisição é obrigatório');
+        }
+
+        if (!getElementValue('meta')) {
+          erros.push('Meta/Etapa é obrigatória');
+        }
+
+        if (!getElementValue('rubrica')) {
+          erros.push('Rubrica é obrigatória');
+        }
+
+        const enderecoId = getElementValue('endereco');
+        const boxNovoEndereco = getElementById('boxNovoEndereco');
+        const mostraNovoEnd = boxNovoEndereco && boxNovoEndereco.style.display !== 'none';
+
+        if (!enderecoId && !mostraNovoEnd) {
+          erros.push('Endereço é obrigatório (selecione ou cadastre novo)');
+        }
+
+        if (mostraNovoEnd) {
+          if (!getElementValue('nEnd_logradouro')) erros.push('Logradouro do novo endereço é obrigatório');
+          if (!getElementValue('nEnd_cidade')) erros.push('Cidade do novo endereço é obrigatória');
+          if (!getElementValue('nEnd_uf')) erros.push('UF do novo endereço é obrigatório');
+          if (!getElementValue('nEnd_cep')) erros.push('CEP do novo endereço é obrigatório');
+        }
+
+        const tbody = document.querySelector('#tabelaItens tbody');
+        if (!tbody || tbody.children.length === 0) {
+          erros.push('Adicione pelo menos um item à requisição');
+        }
+
+        return erros;
+      }
+
+      // Criação segura de elementos
+      function criarElemento(tag, attrs = {}, children = []) {
+        const el = document.createElement(tag);
+
+        for (const [key, value] of Object.entries(attrs)) {
+          if (key === 'className') {
+            el.className = value;
+          } else if (key === 'textContent') {
+            el.textContent = value;
+          } else if (key === 'innerHTML') {
+            // Permitir innerHTML apenas se explícito (usar com cuidado)
+            el.innerHTML = value;
+          } else if (key.startsWith('on')) {
+            // Event listeners
+            el.addEventListener(key.substring(2).toLowerCase(), value);
+          } else {
+            el.setAttribute(key, value);
+          }
+        }
+
+        children.forEach(child => {
+          if (typeof child === 'string') {
+            el.appendChild(document.createTextNode(child));
+          } else if (child) {
+            el.appendChild(child);
+          }
+        });
+
+        return el;
+      }
+
+      // CORREÇÃO: Criar células de forma segura, sem innerHTML vulnerável
+      function criarCelulaTexto(texto) {
+        const td = document.createElement('td');
+        td.textContent = texto || '';
+        return td;
+      }
+
+      function criarCelulaHTML(html) {
+        const td = document.createElement('td');
+        td.innerHTML = html; // Usar apenas para HTML confiável
+        return td;
+      }
+
+      function criarBotao(texto, onClick, classe = 'btn-secondary') {
+        const btn = document.createElement('button');
+        btn.className = `btn ${classe}`;
+        btn.textContent = texto;
+        btn.addEventListener('click', onClick);
+        return btn;
+      }
+
+      function criarTagStatus(status) {
+        const span = document.createElement('span');
+        span.className = `tag status-${statusParaClasse(status)}`;
+        span.textContent = status;
+        return span;
+      }
+
+      // Inicialização
+      function init() {
+        try {
+          const u = dadosIniciais.usuario;
+          setElementText('usuarioNome', u.nome);
+          setElementText('usuarioEmail', u.email);
+          setElementText('usuarioPerfil', u.perfil);
+
+          preencherSelects();
+
+          setElementValue('projeto', '11986-5 - CONTRATO N° 62/2024 - PROJETO TEKO PORÃ');
+
+          if (u.perfil === PERFIL.REQUISITANTE || u.perfil === PERFIL.ADMIN) {
+            showElement('areaRequisitante');
+            carregarMinhasRequisicoes();
+          }
+
+          if (u.perfil === PERFIL.ADMIN) {
+            showElement('areaAdmin');
+            carregarAdmin();
+            carregarCadastradoresParaAdmin();
+          }
+
+          if (u.perfil === PERFIL.CADASTRADOR) {
+            showElement('areaCadastrador');
+            carregarCadastrador();
+          }
+        } catch (error) {
+          console.error('Erro na inicialização:', error);
+          alert('Erro ao carregar a aplicação. Recarregue a página.');
+        }
+      }
+
+      function preencherSelects() {
+        // Tipos de requisição
+        const selTipo = getElementById('tipoRequisicao');
+        if (selTipo) {
+          dadosIniciais.tipos.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t;
+            opt.textContent = t;
+            selTipo.appendChild(opt);
+          });
+        }
+
+        // Metas
+        const selMeta = getElementById('meta');
+        if (selMeta) {
+          const optDefault = document.createElement('option');
+          optDefault.value = '';
+          optDefault.textContent = 'Selecione...';
+          selMeta.appendChild(optDefault);
+
+          dadosIniciais.metas.forEach(m => {
+            const opt = document.createElement('option');
+            opt.value = m.descricao;
+            opt.textContent = m.descricao;
+            selMeta.appendChild(opt);
+          });
+        }
+
+        // Rubricas
+        const selRub = getElementById('rubrica');
+        if (selRub) {
+          const optDefault = document.createElement('option');
+          optDefault.value = '';
+          optDefault.textContent = 'Selecione...';
+          selRub.appendChild(optDefault);
+
+          dadosIniciais.rubricas.forEach(r => {
+            const opt = document.createElement('option');
+            opt.value = r.codigo;
+            opt.textContent = `${r.codigo} - ${r.descricao}`;
+            selRub.appendChild(opt);
+          });
+        }
+
+        preencherEnderecos();
+      }
+
+      function preencherEnderecos() {
+        const sel = getElementById('endereco');
+        if (!sel) return;
+
+        sel.innerHTML = '';
+
+        const opt0 = document.createElement('option');
+        opt0.value = '';
+        opt0.textContent = 'Selecione...';
+        sel.appendChild(opt0);
+
+        dadosIniciais.enderecos.forEach(e => {
+          const opt = document.createElement('option');
+          opt.value = e.id;
+          opt.textContent = e.nome;
+          sel.appendChild(opt);
+        });
+      }
+
+      // Gestão de requisições (REQUISITANTE)
+      function novaRequisicao() {
+        limparForm();
+        showElement('areaForm');
+        setElementText('tituloForm', 'Cadastro de nova requisição');
+        setElementValue('dataCadastro', new Date().toLocaleString('pt-BR'));
+      }
+
+      function limparForm() {
+        setElementValue('reqId', '');
+        setElementValue('limiteAtendimento', '');
+        setElementValue('meta', '');
+        setElementValue('rubrica', '');
+        setElementValue('endereco', '');
+        setElementValue('formaAvaliacao', '');
+        setElementValue('justificativaForma', '');
+        setElementValue('observacoes', '');
+        setElementValue('linksAnexos', '');
+        hideElement('boxNovoEndereco');
+        limparMensagem('msgForm');
+
+        const tbody = document.querySelector('#tabelaItens tbody');
+        if (tbody) tbody.innerHTML = '';
+
+        AppState.requisicaoAtual = null;
+      }
+
+      function mostrarNovoEndereco() {
+        showElement('boxNovoEndereco');
+      }
+
+      function fecharForm() {
+        hideElement('areaForm');
+      }
+
+      // Gestão de itens
+      function adicionarItem() {
+        const tbody = document.querySelector('#tabelaItens tbody');
+        if (!tbody) return;
+
+        const idx = tbody.children.length + 1;
+
+        const tr = document.createElement('tr');
+
+        // Coluna #
+        tr.appendChild(criarCelulaTexto(idx));
+
+        // Descrição
+        const tdDesc = document.createElement('td');
+        const taDesc = document.createElement('textarea');
+        taDesc.rows = 2;
+        taDesc.style.width = '180px';
+        taDesc.setAttribute('aria-label', 'Descrição do item');
+        tdDesc.appendChild(taDesc);
+        tr.appendChild(tdDesc);
+
+        // Unidade
+        const tdUn = document.createElement('td');
+        const inpUn = document.createElement('input');
+        inpUn.type = 'text';
+        inpUn.style.width = '50px';
+        inpUn.setAttribute('aria-label', 'Unidade');
+        tdUn.appendChild(inpUn);
+        tr.appendChild(tdUn);
+
+        // Quantidade
+        const tdQt = document.createElement('td');
+        const inpQt = document.createElement('input');
+        inpQt.type = 'number';
+        inpQt.step = '0.01';
+        inpQt.style.width = '70px';
+        inpQt.setAttribute('aria-label', 'Quantidade');
+        inpQt.addEventListener('input', () => recalcLinha(tr));
+        tdQt.appendChild(inpQt);
+        tr.appendChild(tdQt);
+
+        // Valor Unitário
+        const tdVu = document.createElement('td');
+        const inpVu = document.createElement('input');
+        inpVu.type = 'number';
+        inpVu.step = '0.01';
+        inpVu.style.width = '80px';
+        inpVu.setAttribute('aria-label', 'Valor unitário');
+        inpVu.addEventListener('input', () => recalcLinha(tr));
+        tdVu.appendChild(inpVu);
+        tr.appendChild(tdVu);
+
+        // Valor Total
+        const tdVt = document.createElement('td');
+        const inpVt = document.createElement('input');
+        inpVt.type = 'text';
+        inpVt.style.width = '90px';
+        inpVt.disabled = true;
+        inpVt.setAttribute('aria-label', 'Valor total');
+        tdVt.appendChild(inpVt);
+        tr.appendChild(tdVt);
+
+        // Finalidade
+        const tdFin = document.createElement('td');
+        const taFin = document.createElement('textarea');
+        taFin.rows = 2;
+        taFin.style.width = '150px';
+        taFin.setAttribute('aria-label', 'Finalidade');
+        tdFin.appendChild(taFin);
+        tr.appendChild(tdFin);
+
+        // Justificativa técnica
+        const tdJust = document.createElement('td');
+        const taJust = document.createElement('textarea');
+        taJust.rows = 2;
+        taJust.style.width = '150px';
+        taJust.setAttribute('aria-label', 'Justificativa técnica');
+        tdJust.appendChild(taJust);
+        tr.appendChild(tdJust);
+
+        // Botão remover
+        const tdAcoes = document.createElement('td');
+        const btnRemover = criarBotao('X', () => removerItem(tr));
+        tdAcoes.appendChild(btnRemover);
+        tr.appendChild(tdAcoes);
+
+        tbody.appendChild(tr);
+      }
+
+      function recalcLinha(tr) {
+        const qtd = sanitizeNumber(tr.children[3].querySelector('input').value);
+        const vu = sanitizeNumber(tr.children[4].querySelector('input').value);
+        const vt = qtd * vu;
+        tr.children[5].querySelector('input').value = formatarMoeda(vt);
+      }
+
+      function removerItem(tr) {
+        if (confirm('Remover este item?')) {
+          tr.remove();
+          reindexarItens();
+        }
+      }
+
+      // CORREÇÃO: Reindexar itens após remoção
+      function reindexarItens() {
+        const tbody = document.querySelector('#tabelaItens tbody');
+        if (!tbody) return;
+
+        Array.from(tbody.children).forEach((tr, idx) => {
+          tr.children[0].textContent = idx + 1;
+        });
+      }
+
+      function montarObjetoRequisicao() {
+        const itens = [];
+        const tbody = document.querySelector('#tabelaItens tbody');
+
+        if (tbody) {
+          for (let i = 0; i < tbody.children.length; i++) {
+            const tr = tbody.children[i];
+            itens.push({
+              descricaoDetalhada: tr.children[1].querySelector('textarea').value,
+              unidade: tr.children[2].querySelector('input').value,
+              quantidade: sanitizeNumber(tr.children[3].querySelector('input').value),
+              valorUnitario: sanitizeNumber(tr.children[4].querySelector('input').value),
+              finalidade: tr.children[6].querySelector('textarea').value,
+              justificativaTecnica: tr.children[7].querySelector('textarea').value
+            });
+          }
+        }
+
+        const dados = {
+          id: getElementValue('reqId') || null,
+          tipoRequisicao: getElementValue('tipoRequisicao'),
+          limiteAtendimento: getElementValue('limiteAtendimento'),
+          meta: getElementValue('meta'),
+          rubricaCodigo: getElementValue('rubrica'),
+          enderecoId: getElementValue('endereco') || null,
+          enderecoNovo: null,
+          formaAvaliacao: getElementValue('formaAvaliacao'),
+          justificativaForma: getElementValue('justificativaForma'),
+          observacoes: getElementValue('observacoes'),
+          linksAnexos: getElementValue('linksAnexos'),
+          itens: itens
+        };
+
+        const boxNovoEndereco = getElementById('boxNovoEndereco');
+        if (!dados.enderecoId && boxNovoEndereco && boxNovoEndereco.style.display !== 'none') {
+          dados.enderecoNovo = {
+            nome: getElementValue('nEnd_nome'),
+            logradouro: getElementValue('nEnd_logradouro'),
+            numero: getElementValue('nEnd_numero'),
+            bairro: getElementValue('nEnd_bairro'),
+            cidade: getElementValue('nEnd_cidade'),
+            uf: getElementValue('nEnd_uf'),
+            cep: getElementValue('nEnd_cep'),
+            complemento: getElementValue('nEnd_complemento')
+          };
+        }
+
+        return dados;
+      }
+
+      function salvarRequisicaoBtn() {
+        limparMensagem('msgForm');
+
+        // Validar campos obrigatórios
+        const erros = validarCamposObrigatorios();
+        if (erros.length > 0) {
+          mostrarMensagem('msgForm', 'Erros:\n' + erros.join('\n'), 'erro');
+          return;
+        }
+
+        const dados = montarObjetoRequisicao();
+
+        mostrarMensagem('msgForm', 'Salvando...', 'sucesso');
+        setLoading(true);
+
+        google.script.run
+          .withSuccessHandler(function (res) {
+            setLoading(false);
+            mostrarMensagem('msgForm', `Salvo com sucesso. Número: ${res.numero}`, 'sucesso');
+            setElementValue('reqId', res.id);
+            carregarMinhasRequisicoes();
+          })
+          .withFailureHandler(function (err) {
+            setLoading(false);
+            mostrarMensagem('msgForm', `Erro: ${err.message}`, 'erro');
+          })
+          .salvarRequisicao(dados);
+      }
+
+      function enviarRequisicaoBtn() {
+        const id = getElementValue('reqId');
+
+        if (!id) {
+          alert('Salve a requisição antes de enviar.');
+          return;
+        }
+
+        if (!confirm('Confirmar envio da requisição? Após o envio não será possível editar até nova devolução.')) {
+          return;
+        }
+
+        mostrarMensagem('msgForm', 'Enviando...', 'sucesso');
+        setLoading(true);
+
+        google.script.run
+          .withSuccessHandler(function () {
+            setLoading(false);
+            mostrarMensagem('msgForm', 'Requisição enviada com sucesso!', 'sucesso');
+            carregarMinhasRequisicoes();
+            setTimeout(() => hideElement('areaForm'), 2000);
+          })
+          .withFailureHandler(function (err) {
+            setLoading(false);
+            mostrarMensagem('msgForm', `Erro: ${err.message}`, 'erro');
+          })
+          .enviarRequisicao(id);
+      }
+
+      function carregarMinhasRequisicoes() {
+        google.script.run
+          .withSuccessHandler(function (lista) {
+            const tbody = document.querySelector('#tabelaMinhasReq tbody');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+
+            lista.forEach(r => {
+              const tr = document.createElement('tr');
+
+              tr.appendChild(criarCelulaTexto(r.numero || ''));
+              tr.appendChild(criarCelulaTexto(r.tipo));
+
+              const tdStatus = document.createElement('td');
+              tdStatus.appendChild(criarTagStatus(r.status));
+              tr.appendChild(tdStatus);
+
+              tr.appendChild(criarCelulaTexto(formatarData(r.dataCadastro)));
+              tr.appendChild(criarCelulaTexto(r.meta || ''));
+
+              const tdAcoes = document.createElement('td');
+              // CORREÇÃO: Não usar onclick inline, usar addEventListener
+              const btnEditar = criarBotao('Editar', () => editarReq(r.id));
+              tdAcoes.appendChild(btnEditar);
+              tr.appendChild(tdAcoes);
+
+              tbody.appendChild(tr);
+            });
+          })
+          .withFailureHandler(function (err) {
+            console.error('Erro ao carregar requisições:', err);
+            alert('Erro ao carregar suas requisições.');
+          })
+          .listarMinhasRequisicoes();
+      }
+
+      function editarReq(id) {
+        showElement('areaForm');
+        setElementValue('reqId', id);
+        setElementText('tituloForm', 'Edição de requisição');
+        limparMensagem('msgForm');
+
+        // TODO: Implementar carregamento completo dos dados da requisição
+        mostrarMensagem(
+          'msgForm',
+          'Edição de requisição existente. Carregamento completo dos dados pode ser implementado.',
+          'sucesso'
+        );
+      }
+
+      // ADMIN
+      function carregarAdmin() {
+        google.script.run
+          .withSuccessHandler(function (lista) {
+            const tbody = document.querySelector('#tabelaAdmin tbody');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+
+            lista.forEach(r => {
+              const tr = document.createElement('tr');
+
+              tr.appendChild(criarCelulaTexto(r.numero));
+              tr.appendChild(criarCelulaTexto(r.tipo));
+
+              const tdStatus = document.createElement('td');
+              tdStatus.appendChild(criarTagStatus(r.status));
+              tr.appendChild(tdStatus);
+
+              tr.appendChild(criarCelulaTexto(r.meta || ''));
+              tr.appendChild(criarCelulaTexto(r.rubrica || ''));
+              tr.appendChild(criarCelulaTexto(r.requisitante));
+
+              const tdAcoes = document.createElement('td');
+              const btnAvaliar = criarBotao('Avaliar', () => abrirDecisao(r.id, r.numero));
+              tdAcoes.appendChild(btnAvaliar);
+              tr.appendChild(tdAcoes);
+
+              tbody.appendChild(tr);
+            });
+          })
+          .withFailureHandler(function (err) {
+            console.error('Erro ao carregar requisições admin:', err);
+          })
+          .listarRequisicoesParaAdmin();
+      }
+
+      function carregarCadastradoresParaAdmin() {
+        google.script.run
+          .withSuccessHandler(function (lista) {
+            const sel = getElementById('decisaoCadastrador');
+            if (!sel) return;
+
+            lista.forEach(u => {
+              const opt = document.createElement('option');
+              opt.value = u.email;
+              opt.textContent = `${u.nome} (${u.email})`;
+              sel.appendChild(opt);
+            });
+          })
+          .withFailureHandler(function (err) {
+            console.error('Erro ao carregar cadastradores:', err);
+          })
+          .listarCadastradoresParaAdmin(); // CORREÇÃO: Sintaxe correta
+      }
+
+      function abrirDecisao(id, numero) {
+        showElement('boxDecisao');
+        setElementValue('decisaoId', id);
+        setElementText('decisaoNumero', numero);
+        limparMensagem('msgDecisao');
+      }
+
+      function decisaoAdmin(acao) {
+        const id = getElementValue('decisaoId');
+        const just = getElementValue('decisaoJustificativa');
+        const cad = getElementValue('decisaoCadastrador');
+
+        if (acao === 'APROVAR' && !cad) {
+          mostrarMensagem('msgDecisao', 'Selecione um cadastrador para aprovar.', 'erro');
+          return;
+        }
+
+        if ((acao === 'REJEITAR' || acao === 'CORRIGIR') && !just.trim()) {
+          mostrarMensagem('msgDecisao', 'Justificativa é obrigatória para rejeição ou solicitação de correção.', 'erro');
+          return;
+        }
+
+        mostrarMensagem('msgDecisao', 'Processando...', 'sucesso');
+        setLoading(true);
+
+        google.script.run
+          .withSuccessHandler(function () {
+            setLoading(false);
+            mostrarMensagem('msgDecisao', 'Decisão registrada com sucesso!', 'sucesso');
+            carregarAdmin();
+            setTimeout(() => hideElement('boxDecisao'), 2000);
+          })
+          .withFailureHandler(function (err) {
+            setLoading(false);
+            mostrarMensagem('msgDecisao', `Erro: ${err.message}`, 'erro');
+          })
+          .decidirRequisicaoAdmin(id, acao, just, cad);
+      }
+
+      // CADASTRADOR
+      function carregarCadastrador() {
+        google.script.run
+          .withSuccessHandler(function (lista) {
+            const tbody = document.querySelector('#tabelaCad tbody');
+            if (!tbody) return;
+
+            tbody.innerHTML = '';
+
+            lista.forEach(r => {
+              const tr = document.createElement('tr');
+
+              tr.appendChild(criarCelulaTexto(r.numero));
+              tr.appendChild(criarCelulaTexto(r.tipo));
+              tr.appendChild(criarCelulaTexto(r.meta));
+              tr.appendChild(criarCelulaTexto(r.requisitante));
+
+              const tdAcoes = document.createElement('td');
+              const btnRegistrar = criarBotao('Registrar no portal', () => abrirPortal(r.id, r.numero));
+              tdAcoes.appendChild(btnRegistrar);
+              tr.appendChild(tdAcoes);
+
+              tbody.appendChild(tr);
+            });
+          })
+          .withFailureHandler(function (err) {
+            console.error('Erro ao carregar requisições do cadastrador:', err);
+          })
+          .listarRequisicoesCadastrador();
+      }
+
+      function abrirPortal(id, numero) {
+        showElement('boxPortal');
+        setElementValue('portalId', id);
+        setElementText('portalNumero', numero);
+        limparMensagem('msgPortal');
+      }
+
+      function salvarDadosPortal() {
+        const id = getElementValue('portalId');
+        const numWeb = getElementValue('portalNumeroWeb');
+        const protocolo = getElementValue('portalProtocolo');
+        const link = getElementValue('portalComprovante');
+
+        if (!numWeb.trim() || !protocolo.trim()) {
+          mostrarMensagem('msgPortal', 'Número WEB e Protocolo são obrigatórios.', 'erro');
+          return;
+        }
+
+        mostrarMensagem('msgPortal', 'Salvando...', 'sucesso');
+        setLoading(true);
+
+        google.script.run
+          .withSuccessHandler(function () {
+            setLoading(false);
+            mostrarMensagem('msgPortal', 'Dados salvos. Status alterado para CADASTRADA.', 'sucesso');
+            carregarCadastrador();
+          })
+          .withFailureHandler(function (err) {
+            setLoading(false);
+            mostrarMensagem('msgPortal', `Erro: ${err.message}`, 'erro');
+          })
+          .atualizarDadosPortal(id, numWeb, protocolo, link);
+      }
+
+      function enviarParaAutorizacao() {
+        const id = getElementValue('portalId');
+
+        if (!confirm('Confirmar envio para autorização ao coordenador?')) {
+          return;
+        }
+
+        mostrarMensagem('msgPortal', 'Enviando...', 'sucesso');
+        setLoading(true);
+
+        google.script.run
+          .withSuccessHandler(function () {
+            setLoading(false);
+            mostrarMensagem('msgPortal', 'Enviado para autorização com sucesso!', 'sucesso');
+            carregarCadastrador();
+            setTimeout(() => hideElement('boxPortal'), 2000);
+          })
+          .withFailureHandler(function (err) {
+            setLoading(false);
+            mostrarMensagem('msgPortal', `Erro: ${err.message}`, 'erro');
+          })
+          .enviarParaAutorizacao(id);
+      }
+
+      // Inicialização quando DOM estiver pronto
+      window.addEventListener('DOMContentLoaded', init);
+    </script>
+
+    <h1>Requisições de Compra - Programa Teko Porã</h1>
+    <div>
+      Usuário: <b><span id="usuarioNome"></span></b> (<span id="usuarioEmail"></span>) – Perfil:
+      <b><span id="usuarioPerfil"></span></b>
+    </div>
+
+    <!-- Área do requisitante -->
+    <div id="areaRequisitante" class="secao" style="display: none">
+      <h2>Minhas requisições</h2>
+      <button class="btn btn-primary" id="btnNovaReq">Nova requisição</button>
+      <table id="tabelaMinhasReq">
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Tipo</th>
+            <th>Status</th>
+            <th>Data</th>
+            <th>Meta</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Formulário de cadastro/edição -->
+    <div id="areaForm" class="secao" style="display: none">
+      <h2 id="tituloForm">Cadastro de Requisição</h2>
+      <input type="hidden" id="reqId" />
+
+      <label for="tipoRequisicao" class="campo-obrigatorio">Tipo de Requisição</label>
+      <select id="tipoRequisicao" required></select>
+
+      <label for="projeto">Projeto</label>
+      <input type="text" id="projeto" disabled />
+
+      <label for="dataCadastro">Data do cadastro</label>
+      <input type="text" id="dataCadastro" disabled />
+
+      <label for="limiteAtendimento">Limite de Atendimento (opcional)</label>
+      <input type="date" id="limiteAtendimento" />
+
+      <label for="meta" class="campo-obrigatorio">Metas/Etapas (Atividades)</label>
+      <select id="meta" required></select>
+
+      <label for="rubrica" class="campo-obrigatorio">Rubrica</label>
+      <select id="rubrica" required></select>
+
+      <label for="endereco" class="campo-obrigatorio">Local de Entrega</label>
+      <select id="endereco" required></select>
+
+      <div style="margin-top: 6px">
+        <button class="btn btn-secondary" id="btnNovoEndereco">Cadastrar novo endereço</button>
+      </div>
+
+      <div id="boxNovoEndereco" style="display: none; margin-top: 8px">
+        <h3>Novo endereço</h3>
+        <label for="nEnd_nome">Nome/Descrição</label><input type="text" id="nEnd_nome" />
+        <label for="nEnd_logradouro">Logradouro</label><input type="text" id="nEnd_logradouro" />
+        <label for="nEnd_numero">Número</label><input type="text" id="nEnd_numero" />
+        <label for="nEnd_bairro">Bairro</label><input type="text" id="nEnd_bairro" />
+        <label for="nEnd_cidade">Cidade</label><input type="text" id="nEnd_cidade" />
+        <label for="nEnd_uf">UF</label><input type="text" id="nEnd_uf" />
+        <label for="nEnd_cep">CEP</label><input type="text" id="nEnd_cep" />
+        <label for="nEnd_complemento">Complemento</label><input type="text" id="nEnd_complemento" />
+      </div>
+
+      <label for="formaAvaliacao">Forma de Avaliação das cotações</label>
+      <select id="formaAvaliacao">
+        <option value="">Não definida</option>
+        <option value="Global">Global</option>
+        <option value="Por Item">Por Item</option>
+      </select>
+
+      <label for="justificativaForma">Justificativa / Finalidade da Forma de Avaliação das cotações</label>
+      <textarea id="justificativaForma" rows="3"></textarea>
+
+      <label for="observacoes">Observações (opcional)</label>
+      <textarea id="observacoes" rows="3"></textarea>
+
+      <label for="linksAnexos">Links de documentos anexos (separar por ponto e vírgula)</label>
+      <textarea id="linksAnexos" rows="2"></textarea>
+
+      <h3>Itens da requisição</h3>
+      <table id="tabelaItens">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Descrição detalhada</th>
+            <th>Unid.</th>
+            <th>Qtd</th>
+            <th>Vlr Unit.</th>
+            <th>Vlr Total</th>
+            <th>Finalidade</th>
+            <th>Justificativa técnica</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+      <button class="btn btn-secondary" id="btnAdicionarItem">Adicionar item</button>
+
+      <div style="margin-top: 12px">
+        <button class="btn btn-primary" id="btnSalvar">Salvar</button>
+        <button class="btn btn-primary" id="btnEnviar">Enviar requisição</button>
+        <button class="btn btn-secondary" id="btnFechar">Fechar</button>
+      </div>
+      <div id="msgForm"></div>
+    </div>
+
+    <!-- Área do ADMIN -->
+    <div id="areaAdmin" class="secao" style="display: none">
+      <h2>Painel do administrador</h2>
+      <table id="tabelaAdmin">
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Tipo</th>
+            <th>Status</th>
+            <th>Meta</th>
+            <th>Rubrica</th>
+            <th>Requisitante</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <div id="boxDecisao" style="margin-top: 16px; display: none">
+        <h3>Decisão sobre requisição <span id="decisaoNumero"></span></h3>
+        <input type="hidden" id="decisaoId" />
+        <label for="decisaoJustificativa">Justificativa (obrigatória para rejeição ou correção)</label>
+        <textarea id="decisaoJustificativa" rows="3"></textarea>
+
+        <label for="decisaoCadastrador">Cadastrador (somente para aprovação)</label>
+        <select id="decisaoCadastrador">
+          <option value="">Selecione</option>
+        </select>
+
+        <div style="margin-top: 8px">
+          <button class="btn btn-primary" id="btnAprovar">Aprovar</button>
+          <button class="btn btn-secondary" id="btnCorrigir">Solicitar correção</button>
+          <button class="btn btn-secondary" id="btnRejeitar">Rejeitar</button>
+        </div>
+        <div id="msgDecisao"></div>
+      </div>
+    </div>
+
+    <!-- Área do CADASTRADOR -->
+    <div id="areaCadastrador" class="secao" style="display: none">
+      <h2>Requisições aprovadas para cadastro FADEX</h2>
+      <table id="tabelaCad">
+        <thead>
+          <tr>
+            <th>Número</th>
+            <th>Tipo</th>
+            <th>Meta</th>
+            <th>Requisitante</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <div id="boxPortal" style="margin-top: 16px; display: none">
+        <h3>Cadastro no portal FADEX – Requisição <span id="portalNumero"></span></h3>
+        <input type="hidden" id="portalId" />
+        <label for="portalNumeroWeb">Número WEB</label><input type="text" id="portalNumeroWeb" />
+        <label for="portalProtocolo">Protocolo</label><input type="text" id="portalProtocolo" />
+        <label for="portalComprovante">Link do comprovante (Drive ou portal)</label
+        ><input type="text" id="portalComprovante" />
+
+        <div style="margin-top: 8px">
+          <button class="btn btn-primary" id="btnSalvarPortal">Salvar dados do portal</button>
+          <button class="btn btn-secondary" id="btnEnviarAutorizacao">Enviar para autorização</button>
+        </div>
+        <div id="msgPortal"></div>
+      </div>
+    </div>
+
+    <script>
+      // Event listeners para botões (após DOM carregado)
+      document.getElementById('btnNovaReq')?.addEventListener('click', novaRequisicao);
+      document.getElementById('btnNovoEndereco')?.addEventListener('click', mostrarNovoEndereco);
+      document.getElementById('btnAdicionarItem')?.addEventListener('click', adicionarItem);
+      document.getElementById('btnSalvar')?.addEventListener('click', salvarRequisicaoBtn);
+      document.getElementById('btnEnviar')?.addEventListener('click', enviarRequisicaoBtn);
+      document.getElementById('btnFechar')?.addEventListener('click', fecharForm);
+      document.getElementById('btnAprovar')?.addEventListener('click', () => decisaoAdmin('APROVAR'));
+      document.getElementById('btnCorrigir')?.addEventListener('click', () => decisaoAdmin('CORRIGIR'));
+      document.getElementById('btnRejeitar')?.addEventListener('click', () => decisaoAdmin('REJEITAR'));
+      document.getElementById('btnSalvarPortal')?.addEventListener('click', salvarDadosPortal);
+      document.getElementById('btnEnviarAutorizacao')?.addEventListener('click', enviarParaAutorizacao);
+    </script>
+  </body>
+</html>
