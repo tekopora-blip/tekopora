@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <base target="_top">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Requisições de Compra - Teko Porã</title>
+  <style>
+    :root {
+      --cor-primaria: #8D2033;
+      --cor-secundaria: #6a1625;
+      --cor-borda: #ddd;
+      --cor-fundo-claro: #f9f9f9;
+      --cor-erro: #dc3545;
+      --cor-sucesso: #28a745;
+      --cor-aviso: #ffc107;
+      --cor-info: #17a2b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #333;
+      background-color: #f0f0f0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    header {
+      background: linear-gradient(135deg, var(--cor-primaria), var(--cor-secundaria));
+      color: white;
+      padding: 24px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    header h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .user-info {
+      text-align: right;
+      font-size: 13px;
+    }
+
+    .user-info .perfil {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      padding: 4px 12px;
+      border-radius: 12px;
+      margin-top: 4px;
+      font-weight: 600;
+    }
+
+    .content {
+      padding: 30px;
+    }
+
+    .secao {
+      background: white;
+      border: 1px solid var(--cor-borda);
+      border-radius: 6px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+
+    .secao-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--cor-fundo-claro);
+    }
+
+    .secao-header h2 {
+      font-size: 18px;
+      color: var(--cor-primaria);
+      font-weight: 600;
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      margin-bottom: 4px;
+      font-weight: 500;
+      font-size: 13px;
+    }
+
+    .campo-obrigatorio::after {
+      content: ' *';
+      color: var(--cor-erro);
+      font-weight: bold;
+    }
+
+    input[type=text],
+    input[type=number],
+    input[type=date],
+    select,
+    textarea {
+      width: 100%;
+      padding: 8px 12px;
+      font-size: 13px;
+      border: 1px solid var(--cor-borda);
+      border-radius: 4px;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      transition: border-color 0.2s;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      outline: none;
+      border-color: var(--cor-primaria);
+    }
+
+    input[type=number] {
+      text-align: right;
+    }
+
+    input:disabled {
+      background-color: #f5f5f5;
+      cursor: not-allowed;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 13px;
+    }
+
+    th, td {
+      border: 1px solid var(--cor-borda);
+      padding: 10px;
+      text-align: left;
+    }
+
+    th {
+      background: var(--cor-fundo-claro);
+      font-weight: 600;
+      color: #555;
+    }
+
+    tbody tr:hover {
+      background-color: #f8f8f8;
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 8px 16px;
+      font-size: 13px;
+      font-weight: 500;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+      margin-right: 6px;
+      margin-bottom: 6px;
+    }
+
+    .btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    .btn:active:not(:disabled) {
+      transform: translateY(0);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-primary {
+      background: var(--cor-primaria);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--cor-secundaria);
+    }
+
+    .btn-success {
+      background: var(--cor-sucesso);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+
+    .btn-sm {
+      padding: 4px 10px;
+      font-size: 12px;
+    }
+
+    .btn-danger {
+      background: var(--cor-erro);
+      color: white;
+    }
+
+    .tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .status-RASCUNHO {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status-ENVIADA {
+      background: #cce5ff;
+      color: #004085;
+    }
+
+    .status-APROVADA {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status-REJEITADA {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .status-EM-CORRECAO {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status-CADASTRADA {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+
+    .status-ENVIADA-AUTORIZACAO {
+      background: #e2e3e5;
+      color: #383d41;
+    }
+
+    .alert {
+      padding: 12px 16px;
+      border-radius: 4px;
+      margin: 16px 0;
+      font-size: 13px;
+    }
+
+    .alert-success {
+      background: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+
+    .alert-error {
+      background: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+
+    .alert-info {
+      background: #d1ecf1;
+      color: #0c5460;
+      border: 1px solid #bee5eb;
+    }
+
+    .alert-warning {
+      background: #fff3cd;
+      color: #856404;
+      border: 1px solid #ffeeba;
+    }
+
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .loading-overlay.show {
+      display: flex;
+    }
+
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid var(--cor-primaria);
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 8px;
+      padding: 24px;
+      max-width: 600px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid var(--cor-fundo-claro);
+    }
+
+    .modal-header h3 {
+      color: var(--cor-primaria);
+      font-size: 18px;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #999;
+    }
+
+    .close-btn:hover {
+      color: #333;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--cor-borda);
+    }
+
+    .dica {
+      font-size: 12px;
+      color: #666;
+      font-style: italic;
+      margin-top: 4px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #999;
+    }
+
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    @media (max-width: 768px) {
+      body {
+        padding: 10px;
+      }
+
+      .content {
+        padding: 15px;
+      }
+
+      header {
+        padding: 16px;
+      }
+
+      header h1 {
+        font-size: 20px;
+      }
+
+      .grid-2, .grid-3 {
+        grid-template-columns: 1fr;
+      }
+
+      table {
+        font-size: 11px;
+      }
+
+      th, td {
+        padding: 6px;
+      }
+
+      .user-info {
+        width: 100%;
+        text-align: left;
+        margin-top: 12px;
+      }
+    }
+
+    /* Tabela responsiva */
+    @media (max-width: 992px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+
+      thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+      }
+
+      tr {
+        margin-bottom: 10px;
+        border: 1px solid var(--cor-borda);
+        border-radius: 4px;
+      }
+
+      td {
+        border: none;
+        position: relative;
+        padding-left: 50%;
+      }
+
+      td:before {
+        position: absolute;
+        left: 10px;
+        width: 45%;
+        padding-right: 10px;
+        white-space: nowrap;
+        font-weight: bold;
+        content: attr(data-label);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+  </div>
+
+  <div class="container">
+    <header>
+      <div>
+        <h1>🌿 Sistema de Requisições de Compra</h1>
+        <div>Programa Teko Porã - IFMS</div>
+      </div>
+      <div class="user-info">
+        <div><strong id="usuarioNome"></strong></div>
+        <div id="usuarioEmail"></div>
+        <div class="perfil" id="usuarioPerfil"></div>
+      </div>
+    </header>
+
+    <div class="content">
+      <!-- ÁREA DO REQUISITANTE -->
+      <div id="areaRequisitante" style="display: none;">
+        <div class="secao">
+          <div class="secao-header">
+            <h2>📋 Minhas Requisições</h2>
+            <button class="btn btn-primary" onclick="novaRequisicao()">
+              ➕ Nova Requisição
+            </button>
+          </div>
+
+          <div id="listaMinhasReq"></div>
+        </div>
+      </div>
+
+      <!-- ÁREA DO ADMINISTRADOR -->
+      <div id="areaAdmin" style="display: none;">
+        <div class="secao">
+          <div class="secao-header">
+            <h2>🔐 Painel do Administrador</h2>
+            <button class="btn btn-secondary" onclick="carregarAdmin()">
+              🔄 Atualizar
+            </button>
+          </div>
+
+          <div id="listaAdmin"></div>
+        </div>
+      </div>
+
+      <!-- ÁREA DO CADASTRADOR -->
+      <div id="areaCadastrador" style="display: none;">
+        <div class="secao">
+          <div class="secao-header">
+            <h2>📝 Requisições Aprovadas para Cadastro FADEX</h2>
+            <button class="btn btn-secondary" onclick="carregarCadastrador()">
+              🔄 Atualizar
+            </button>
+          </div>
+
+          <div id="listaCadastrador"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: NOVA REQUISIÇÃO -->
+  <div class="modal" id="modalRequisicao">
+    <div class="modal-content" style="max-width: 1000px;">
+      <div class="modal-header">
+        <h3 id="tituloFormRequisicao">Nova Requisição</h3>
+        <button class="close-btn" onclick="fecharModalRequisicao()">&times;</button>
+      </div>
+
+      <div id="msgFormReq"></div>
+
+      <form id="formRequisicao" onsubmit="return false;">
+        <input type="hidden" id="reqId">
+
+        <label for="tipoRequisicao" class="campo-obrigatorio">Tipo de Requisição</label>
+        <select id="tipoRequisicao" required></select>
+
+        <label>Projeto</label>
+        <input type="text" id="projeto" disabled>
+
+        <label>Data de Cadastro</label>
+        <input type="text" id="dataCadastro" disabled>
+
+        <div class="grid-2">
+          <div>
+            <label for="limiteAtendimento">Limite de Atendimento</label>
+            <input type="date" id="limiteAtendimento">
+            <div class="dica">Opcional</div>
+          </div>
+          <div>
+            <label for="meta" class="campo-obrigatorio">Meta/Etapa (Atividade)</label>
+            <select id="meta" required></select>
+          </div>
+        </div>
+
+        <label for="rubricaDesc" class="campo-obrigatorio">Descrição da Rubrica</label>
+        <select id="rubricaDesc" required onchange="atualizarCodigoRubrica()"></select>
+
+        <label for="rubricaCodigo">Código da Rubrica</label>
+        <input type="text" id="rubricaCodigo" disabled>
+        <div class="dica">Preenchido automaticamente</div>
+
+        <label for="endereco" class="campo-obrigatorio">Local de Entrega</label>
+        <select id="endereco"></select>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="mostrarNovoEndereco()" style="margin-top: 6px;">
+          + Cadastrar Novo Endereço
+        </button>
+
+        <div id="boxNovoEndereco" style="display: none; margin-top: 12px; padding: 16px; background: #f9f9f9; border-radius: 4px;">
+          <h4 style="margin-bottom: 12px;">Novo Endereço</h4>
+          <div class="grid-2">
+            <div>
+              <label for="nEnd_logradouro">Logradouro</label>
+              <input type="text" id="nEnd_logradouro">
+            </div>
+            <div>
+              <label for="nEnd_numero">Número</label>
+              <input type="text" id="nEnd_numero">
+            </div>
+          </div>
+          <div class="grid-3">
+            <div>
+              <label for="nEnd_bairro">Bairro</label>
+              <input type="text" id="nEnd_bairro">
+            </div>
+            <div>
+              <label for="nEnd_cidade">Cidade</label>
+              <input type="text" id="nEnd_cidade">
+            </div>
+            <div>
+              <label for="nEnd_uf">UF</label>
+              <input type="text" id="nEnd_uf" maxlength="2">
+            </div>
+          </div>
+          <div class="grid-2">
+            <div>
+              <label for="nEnd_cep">CEP</label>
+              <input type="text" id="nEnd_cep">
+            </div>
+            <div>
+              <label for="nEnd_complemento">Complemento</label>
+              <input type="text" id="nEnd_complemento">
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2" style="margin-top: 12px;">
+          <div>
+            <label for="formaAvaliacao">Forma de Avaliação das Cotações</label>
+            <select id="formaAvaliacao">
+              <option value="Não Definida">Não Definida</option>
+              <option value="Global">Global</option>
+              <option value="Por Item">Por Item</option>
+            </select>
+          </div>
+        </div>
+
+        <label for="justificativaForma" class="campo-obrigatorio">Justificativa/Finalidade da Forma de Avaliação</label>
+        <textarea id="justificativaForma" rows="3" required></textarea>
+
+        <label for="observacoes">Observações</label>
+        <textarea id="observacoes" rows="3"></textarea>
+        <div class="dica">Opcional</div>
+
+        <label for="linksAnexos">Links de Documentos Anexos</label>
+        <textarea id="linksAnexos" rows="2" placeholder="Separe múltiplos links por ponto e vírgula (;)"></textarea>
+        <div class="dica">Opcional - Ex: https://drive.google.com/file1; https://drive.google.com/file2</div>
+
+        <h3 style="margin-top: 24px; margin-bottom: 12px; color: var(--cor-primaria);">📦 Itens da Requisição</h3>
+        <div style="overflow-x: auto;">
+          <table id="tabelaItens">
+            <thead>
+              <tr>
+                <th style="width: 40px;">#</th>
+                <th>Descrição Detalhada *</th>
+                <th style="width: 80px;">Unidade *</th>
+                <th style="width: 100px;">Quantidade *</th>
+                <th style="width: 120px;">Valor Unitário *</th>
+                <th style="width: 120px;">Valor Total</th>
+                <th>Finalidade</th>
+                <th>Justificativa Técnica</th>
+                <th style="width: 60px;"></th>
+              </tr>
+            </thead>
+            <tbody id="tbodyItens"></tbody>
+          </table>
+        </div>
+
+        <button type="button" class="btn btn-secondary" onclick="adicionarItem()">
+          ➕ Adicionar Item
+        </button>
+
+        <div class="form-actions">
+          <button type="button" class="btn btn-primary" onclick="salvarRequisicao()">
+            💾 Salvar Rascunho
+          </button>
+          <button type="button" class="btn btn-success" onclick="enviarRequisicao()">
+            📤 Salvar e Enviar
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="fecharModalRequisicao()">
+            ✖️ Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: DECISÃO DO ADMIN -->
+  <div class="modal" id="modalDecisao">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Decisão sobre Requisição <span id="decisaoNumero"></span></h3>
+        <button class="close-btn" onclick="fecharModalDecisao()">&times;</button>
+      </div>
+
+      <div id="msgDecisao"></div>
+
+      <input type="hidden" id="decisaoId">
+
+      <label for="decisaoJustificativa">Justificativa</label>
+      <textarea id="decisaoJustificativa" rows="3"></textarea>
+      <div class="dica">Obrigatória para rejeição ou solicitação de correção</div>
+
+      <label for="decisaoCadastrador">Cadastrador FADEX</label>
+      <select id="decisaoCadastrador">
+        <option value="">Selecione um cadastrador...</option>
+      </select>
+      <div class="dica">Obrigatório apenas para aprovação</div>
+
+      <div class="form-actions">
+        <button class="btn btn-success" onclick="decisaoAdmin('APROVAR')">
+          ✅ Aprovar
+        </button>
+        <button class="btn btn-secondary" onclick="decisaoAdmin('CORRIGIR')">
+          ✏️ Solicitar Correção
+        </button>
+        <button class="btn btn-danger" onclick="decisaoAdmin('REJEITAR')">
+          ❌ Rejeitar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CADASTRO FADEX -->
+  <div class="modal" id="modalFadex">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Cadastro Portal FADEX - <span id="fadexNumero"></span></h3>
+        <button class="close-btn" onclick="fecharModalFadex()">&times;</button>
+      </div>
+
+      <div id="msgFadex"></div>
+
+      <input type="hidden" id="fadexId">
+
+      <label for="fadexNumeroWeb" class="campo-obrigatorio">Número WEB</label>
+      <input type="text" id="fadexNumeroWeb" required>
+
+      <label for="fadexProtocolo" class="campo-obrigatorio">Protocolo</label>
+      <input type="text" id="fadexProtocolo" required>
+
+      <label for="fadexComprovante">Link do Comprovante</label>
+      <input type="text" id="fadexComprovante" placeholder="https://drive.google.com/...">
+      <div class="dica">Opcional - Link para documento comprobatório</div>
+
+      <div class="form-actions">
+        <button class="btn btn-primary" onclick="salvarDadosFadex()">
+          💾 Salvar Dados
+        </button>
+        <button class="btn btn-success" onclick="enviarParaAutorizacao()">
+          📤 Enviar para Autorização
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ========================================================================
+    // DADOS INICIAIS E CONFIGURAÇÃO
+    // ========================================================================
+    const dadosIniciais = <?= JSON.stringify(dadosIniciais) ?>;
+
+    const PERFIL = {
+      ADMIN: 'ADMIN',
+      REQUISITANTE: 'REQUISITANTE',
+      CADASTRADOR: 'CADASTRADOR'
+    };
+
+    const STATUS = {
+      RASCUNHO: 'RASCUNHO',
+      ENVIADA: 'ENVIADA',
+      EM_CORRECAO: 'EM CORREÇÃO',
+      REJEITADA: 'REJEITADA',
+      APROVADA: 'APROVADA',
+      CADASTRADA: 'CADASTRADA',
+      ENVIADA_AUTORIZACAO: 'ENVIADA AUTORIZAÇÃO'
+    };
+
+    // Mapa de rubricas (código => descrição)
+    const mapRubricas = {};
+    dadosIniciais.rubricas.forEach(r => {
+      mapRubricas[r.codigo] = r.descricao;
+    });
+
+    // ========================================================================
+    // FUNÇÕES UTILITÁRIAS
+    // ========================================================================
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      const div = document.createElement('div');
+      div.textContent = String(text);
+      return div.innerHTML;
+    }
+
+    function formatarMoeda(valor) {
+      return Number(valor).toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+    }
+
+    function formatarData(data) {
+      if (!data) return '';
+      try {
+        return new Date(data).toLocaleDateString('pt-BR');
+      } catch (e) {
+        return '';
+      }
+    }
+
+    function sanitizeNumber(value) {
+      return parseFloat(String(value).replace(/,/g, '.')) || 0;
+    }
+
+    function showLoading() {
+      document.getElementById('loadingOverlay').classList.add('show');
+    }
+
+    function hideLoading() {
+      document.getElementById('loadingOverlay').classList.remove('show');
+    }
+
+    function mostrarMensagem(containerId, mensagem, tipo = 'error') {
+      const container = document.getElementById(containerId);
+      if (!container) return;
+
+      container.innerHTML = `<div class="alert alert-${tipo}">${escapeHtml(mensagem)}</div>`;
+
+      // Auto-limpar após 5 segundos para mensagens de sucesso
+      if (tipo === 'success') {
+        setTimeout(() => container.innerHTML = '', 5000);
+      }
+    }
+
+    function limparMensagem(containerId) {
+      const container = document.getElementById(containerId);
+      if (container) container.innerHTML = '';
+    }
+
+    function statusParaClasse(status) {
+      return String(status).replace(/\s+/g, '-');
+    }
+
+    // ========================================================================
+    // INICIALIZAÇÃO
+    // ========================================================================
+
+    function init() {
+      try {
+        const u = dadosIniciais.usuario;
+
+        document.getElementById('usuarioNome').textContent = u.nome;
+        document.getElementById('usuarioEmail').textContent = u.email;
+        document.getElementById('usuarioPerfil').textContent = u.perfil;
+
+        preencherSelects();
+
+        if (u.perfil === PERFIL.REQUISITANTE || u.perfil === PERFIL.ADMIN) {
+          document.getElementById('areaRequisitante').style.display = 'block';
+          carregarMinhasRequisicoes();
+        }
+
+        if (u.perfil === PERFIL.ADMIN) {
+          document.getElementById('areaAdmin').style.display = 'block';
+          carregarAdmin();
+          carregarCadastradoresParaAdmin();
+        }
+
+        if (u.perfil === PERFIL.CADASTRADOR) {
+          document.getElementById('areaCadastrador').style.display = 'block';
+          carregarCadastrador();
+        }
+      } catch (error) {
+        console.error('Erro na inicialização:', error);
+        alert('Erro ao carregar a aplicação. Recarregue a página.');
+      }
+    }
+
+    function preencherSelects() {
+      // Tipos de requisição
+      const selTipo = document.getElementById('tipoRequisicao');
+      dadosIniciais.tipos.forEach(t => {
+        const opt = document.createElement('option');
+        opt.value = t;
+        opt.textContent = t;
+        selTipo.appendChild(opt);
+      });
+
+      // Metas
+      const selMeta = document.getElementById('meta');
+      const optMetaDefault = document.createElement('option');
+      optMetaDefault.value = '';
+      optMetaDefault.textContent = 'Selecione...';
+      selMeta.appendChild(optMetaDefault);
+
+      dadosIniciais.metas.forEach(m => {
+        const opt = document.createElement('option');
+        opt.value = m.descricao;
+        opt.textContent = m.descricao;
+        selMeta.appendChild(opt);
+      });
+
+      // Rubricas (por descrição)
+      const selRubrica = document.getElementById('rubricaDesc');
+      const optRubDefault = document.createElement('option');
+      optRubDefault.value = '';
+      optRubDefault.textContent = 'Selecione...';
+      selRubrica.appendChild(optRubDefault);
+
+      dadosIniciais.rubricas.forEach(r => {
+        const opt = document.createElement('option');
+        opt.value = r.codigo;
+        opt.textContent = `${r.codigo} - ${r.descricao}`;
+        selRubrica.appendChild(opt);
+      });
+
+      // Endereços
+      preencherEnderecos();
+
+      // Projeto fixo
+      document.getElementById('projeto').value = '11986-5 - CONTRATO N° 62/2024 - PROJETO TEKO PORÃ';
+    }
+
+    function preencherEnderecos() {
+      const sel = document.getElementById('endereco');
+      sel.innerHTML = '';
+
+      const opt0 = document.createElement('option');
+      opt0.value = '';
+      opt0.textContent = 'Selecione...';
+      sel.appendChild(opt0);
+
+      dadosIniciais.enderecos.forEach(e => {
+        const opt = document.createElement('option');
+        opt.value = e.id;
+        opt.textContent = `${e.nome} - ${e.cidade}/${e.uf}`;
+        sel.appendChild(opt);
+      });
+    }
+
+    function atualizarCodigoRubrica() {
+      const codigo = document.getElementById('rubricaDesc').value;
+      document.getElementById('rubricaCodigo').value = codigo;
+    }
+
+    // ========================================================================
+    // REQUISIÇÕES - REQUISITANTE
+    // ========================================================================
+
+    function carregarMinhasRequisicoes() {
+      showLoading();
+      google.script.run
+        .withSuccessHandler(function(lista) {
+          hideLoading();
+          renderizarMinhasRequisicoes(lista);
+        })
+        .withFailureHandler(function(err) {
+          hideLoading();
+          console.error('Erro:', err);
+          alert('Erro ao carregar requisições.');
+        })
+        .listarMinhasRequisicoes();
+    }
+
+    function renderizarMinhasRequisicoes(lista) {
+      const container = document.getElementById('listaMinhasReq');
+
+      if (lista.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📭</div>
+            <div>Nenhuma requisição cadastrada</div>
+            <div style="margin-top: 8px;">
+              <button class="btn btn-primary" onclick="novaRequisicao()">
+                Criar primeira requisição
+              </button>
+            </div>
+          </div>`;
+        return;
+      }
+
+      let html = '<table><thead><tr>';
+      html += '<th>Número</th><th>Tipo</th><th>Status</th><th>Data</th><th>Meta</th><th>Ações</th>';
+      html += '</tr></thead><tbody>';
+
+      lista.forEach(r => {
+        html += '<tr>';
+        html += `<td data-label="Número"><strong>${escapeHtml(r.numero)}</strong></td>`;
+        html += `<td data-label="Tipo">${escapeHtml(r.tipo)}</td>`;
+        html += `<td data-label="Status"><span class="tag status-${statusParaClasse(r.status)}">${escapeHtml(r.status)}</span></td>`;
+        html += `<td data-label="Data">${formatarData(r.dataCadastro)}</td>`;
+        html += `<td data-label="Meta">${escapeHtml(r.meta || '')}</td>`;
+        html += `<td data-label="Ações">`;
+
+        if (r.status === STATUS.RASCUNHO || r.status === STATUS.EM_CORRECAO) {
+          html += `<button class="btn btn-sm btn-primary" onclick="editarRequisicao('${r.id}')">✏️ Editar</button>`;
+        }
+
+        html += '</td></tr>';
+      });
+
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+
+    function novaRequisicao() {
+      limparFormRequisicao();
+      document.getElementById('tituloFormRequisicao').textContent = 'Nova Requisição';
+      document.getElementById('dataCadastro').value = new Date().toLocaleString('pt-BR');
+      document.getElementById('modalRequisicao').classList.add('show');
+    }
+
+    function editarRequisicao(id) {
+      // TODO: Implementar carregamento completo dos dados
+      alert('Função de edição será implementada. ID: ' + id);
+    }
+
+    function fecharModalRequisicao() {
+      document.getElementById('modalRequisicao').classList.remove('show');
+    }
+
+    function limparFormRequisicao() {
+      document.getElementById('reqId').value = '';
+      document.getElementById('formRequisicao').reset();
+      document.getElementById('tbodyItens').innerHTML = '';
+      document.getElementById('boxNovoEndereco').style.display = 'none';
+      limparMensagem('msgFormReq');
+      document.getElementById('projeto').value = '11986-5 - CONTRATO N° 62/2024 - PROJETO TEKO PORÃ';
+    }
+
+    function mostrarNovoEndereco() {
+      document.getElementById('boxNovoEndereco').style.display = 'block';
+      document.getElementById('endereco').value = '';
+    }
+
+    // Gestão de Itens
+    function adicionarItem() {
+      const tbody = document.getElementById('tbodyItens');
+      const idx = tbody.children.length + 1;
+
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td data-label="#">${idx}</td>
+        <td data-label="Descrição"><textarea rows="2" style="width: 100%; min-width: 200px;"></textarea></td>
+        <td data-label="Unidade"><input type="text" style="width: 60px;"></td>
+        <td data-label="Quantidade"><input type="number" step="0.01" style="width: 90px;" oninput="recalcularLinha(this)"></td>
+        <td data-label="Vlr Unit"><input type="number" step="0.01" style="width: 100px;" oninput="recalcularLinha(this)"></td>
+        <td data-label="Vlr Total"><input type="text" style="width: 100px;" disabled></td>
+        <td data-label="Finalidade"><textarea rows="2" style="width: 100%; min-width: 150px;"></textarea></td>
+        <td data-label="Justificativa"><textarea rows="2" style="width: 100%; min-width: 150px;"></textarea></td>
+        <td><button type="button" class="btn btn-sm btn-danger" onclick="removerItem(this)">✖</button></td>
+      `;
+
+      tbody.appendChild(tr);
+    }
+
+    function recalcularLinha(input) {
+      const tr = input.closest('tr');
+      const qtd = sanitizeNumber(tr.children[3].querySelector('input').value);
+      const vu = sanitizeNumber(tr.children[4].querySelector('input').value);
+      const vt = qtd * vu;
+      tr.children[5].querySelector('input').value = formatarMoeda(vt);
+    }
+
+    function removerItem(btn) {
+      if (confirm('Remover este item?')) {
+        btn.closest('tr').remove();
+        reindexarItens();
+      }
+    }
+
+    function reindexarItens() {
+      const tbody = document.getElementById('tbodyItens');
+      Array.from(tbody.children).forEach((tr, idx) => {
+        tr.children[0].textContent = idx + 1;
+      });
+    }
+
+    function montarObjetoRequisicao() {
+      const itens = [];
+      const tbody = document.getElementById('tbodyItens');
+
+      for (let i = 0; i < tbody.children.length; i++) {
+        const tr = tbody.children[i];
+        itens.push({
+          descricaoDetalhada: tr.children[1].querySelector('textarea').value,
+          unidade: tr.children[2].querySelector('input').value,
+          quantidade: sanitizeNumber(tr.children[3].querySelector('input').value),
+          valorUnitario: sanitizeNumber(tr.children[4].querySelector('input').value),
+          finalidade: tr.children[6].querySelector('textarea').value,
+          justificativaTecnica: tr.children[7].querySelector('textarea').value
+        });
+      }
+
+      const dados = {
+        id: document.getElementById('reqId').value || null,
+        tipoRequisicao: document.getElementById('tipoRequisicao').value,
+        limiteAtendimento: document.getElementById('limiteAtendimento').value,
+        meta: document.getElementById('meta').value,
+        rubricaCodigo: document.getElementById('rubricaDesc').value,
+        enderecoId: document.getElementById('endereco').value || null,
+        enderecoNovo: null,
+        formaAvaliacao: document.getElementById('formaAvaliacao').value,
+        justificativaForma: document.getElementById('justificativaForma').value,
+        observacoes: document.getElementById('observacoes').value,
+        linksAnexos: document.getElementById('linksAnexos').value,
+        itens: itens
+      };
+
+      // Novo endereço se necessário
+      const boxNovoEnd = document.getElementById('boxNovoEndereco');
+      if (!dados.enderecoId && boxNovoEnd.style.display !== 'none') {
+        dados.enderecoNovo = {
+          logradouro: document.getElementById('nEnd_logradouro').value,
+          numero: document.getElementById('nEnd_numero').value,
+          bairro: document.getElementById('nEnd_bairro').value,
+          cidade: document.getElementById('nEnd_cidade').value,
+          uf: document.getElementById('nEnd_uf').value,
+          cep: document.getElementById('nEnd_cep').value,
+          complemento: document.getElementById('nEnd_complemento').value
+        };
+      }
+
+      return dados;
+    }
+
+    function salvarRequisicao() {
+      limparMensagem('msgFormReq');
+      const dados = montarObjetoRequisicao();
+
+      showLoading();
+      google.script.run
+        .withSuccessHandler(function(res) {
+          hideLoading();
+          mostrarMensagem('msgFormReq', `Salvo com sucesso! Número: ${res.numero}`, 'success');
+          document.getElementById('reqId').value = res.id;
+          carregarMinhasRequisicoes();
+        })
+        .withFailureHandler(function(err) {
+          hideLoading();
+          mostrarMensagem('msgFormReq', err.message, 'error');
+        })
+        .salvarRequisicao(dados);
+    }
+
+    function enviarRequisicao() {
+      const id = document.getElementById('reqId').value;
+
+      if (!id) {
+        mostrarMensagem('msgFormReq', 'Salve a requisição antes de enviar.', 'warning');
+        return;
+      }
+
+      if (!confirm('Confirmar envio? Após o envio não será possível editar até que o administrador devolva.')) {
+        return;
+      }
+
+      showLoading();
+      google.script.run
+        .withSuccessHandler(function() {
+          hideLoading();
+          mostrarMensagem('msgFormReq', 'Requisição enviada com sucesso!', 'success');
+          carregarMinhasRequisicoes();
+          setTimeout(() => fecharModalRequisicao(), 2000);
+        })
+        .withFailureHandler(function(err) {
+          hideLoading();
+          mostrarMensagem('msgFormReq', err.message, 'error');
+        })
+        .enviarRequisicao(id);
+    }
+
+    // ========================================================================
+    // ADMINISTRADOR
+    // ========================================================================
+
+    function carregarAdmin() {
+      showLoading();
+      google.script.run
+        .withSuccessHandler(function(lista) {
+          hideLoading();
+          renderizarAdmin(lista);
+        })
+        .withFailureHandler(function(err) {
+          hideLoading();
+          console.error('Erro:', err);
+        })
+        .listarRequisicoesParaAdmin();
+    }
+
+    function renderizarAdmin(lista) {
+      const container = document.getElementById('listaAdmin');
+
+      if (lista.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📭</div>
+            <div>Nenhuma requisição no sistema</div>
+          </div>`;
+        return;
+      }
+
+      let html = '<table><thead><tr>';
+      html += '<th>Número</th><th>Tipo</th><th>Status</th><th>Meta</th><th>Rubrica</th><th>Requisitante</th><th>Ações</th>';
+      html += '</tr></thead><tbody>';
+
+      lista.forEach(r => {
+        html += '<tr>';
+        html += `<td data-label="Número"><strong>${escapeHtml(r.numero)}</strong></td>`;
+        html += `<td data-label="Tipo">${escapeHtml(r.tipo)}</td>`;
+        html += `<td data-label="Status"><span class="tag status-${statusParaClasse(r.status)}">${escapeHtml(r.status)}</span></td>`;
+        html += `<td data-label="Meta">${escapeHtml(r.meta || '')}</td>`;
+        html += `<td data-label="Rubrica">${escapeHtml(r.rubrica || '')}</td>`;
+        html += `<td data-label="Requisitante">${escapeHtml(r.requisitante)}</td>`;
+        html += `<td data-label="Ações">`;
+
+        if (r.status === STATUS.ENVIADA || r.status === STATUS.EM_CORRECAO) {
+          html += `<button class="btn btn-sm btn-primary" onclick="abrirDecisao('${r.id}', '${escapeHtml(r.numero)}')">⚖️ Avaliar</button>`;
+        }
+
+        html += '</td></tr>';
+      });
+
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+
+    function carregarCadastradoresParaAdmin() {
+      google.script.run
+        .withSuccessHandler(function(lista) {
+          const sel = document.getElementById('decisaoCadastrador');
+          lista.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.email;
+            opt.textContent = `${c.nome} (${c.email})`;
+            sel.appendChild(opt);
+          });
+        })
+        .withFailureHandler(function(err) {
+          console.error('Erro ao carregar cadastradores:', err);
+        })
+        .listarCadastradoresParaAdmin();
+    }
+
+    function abrirDecisao(id, numero) {
+      document.getElementById('decisaoId').value = id;
+      document.getElementById('decisaoNumero').textContent = numero;
+      limparMensagem('msgDecisao');
+      document.getElementById('decisaoJustificativa').value = '';
+      document.getElementById('decisaoCadastrador').value = '';
+      document.getElementById('modalDecisao').classList.add('show');
+    }
+
+    function fecharModalDecisao() {
+      document.getElementById('modalDecisao').classList.remove('show');
+    }
+
+    function decisaoAdmin(acao) {
+      const id = document.getElementById('decisaoId').value;
+      const just = document.getElementById('decisaoJustificativa').value;
+      const cad = document.getElementById('decisaoCadastrador').value;
+
+      if (acao === 'APROVAR' && !cad) {
+        mostrarMensagem('msgDecisao', 'Selecione um cadastrador para aprovar.', 'warning');
+        return;
+      }
+
+      if ((acao === 'REJEITAR' || acao === 'CORRIGIR') && !just.trim()) {
+        mostrarMensagem('msgDecisao', 'Justificativa é obrigatória.', 'warning');
+        return;
+      }
+
+      showLoading();
+      google.script.run
+        .withSuccessHandler(function() {
+          hideLoading();
+          mostrarMensagem('msgDecisao', 'Decisão registrada com sucesso!', 'success');
+          carregarAdmin();
+          setTimeout(() => fecharModalDecisao(), 2000);
+        })
+        .withFailureHandler(function(err) {
+          hideLoading();
+          mostrarMensagem('msgDecisao', err.message, 'error');
+        })
+        .decidirRequisicaoAdmin(id, acao, just, cad);
+    }
+
+    // ========================================================================
+    // CADASTRADOR
+    // ========================================================================
+
+    function carregarCadastrador() {
+      showLoading();
+      google.script.run
+        .withSuccessHandler(function(lista) {
+          hideLoading();
+          renderizarCadastrador(lista);
+        })
+        .withFailureHandler(function(err) {
+          hideLoading();
+          console.error('Erro:', err);
+        })
+        .listarRequisicoesCadastrador();
+    }
+
+    function renderizarCadastrador(lista) {
+      const container = document.getElementById('listaCadastrador');
+
+      if (lista.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📭</div>
+            <div>Nenhuma requisição atribuída a você</div>
+          </div>`;
+        return;
+      }
+
+      let html = '<table><thead><tr>';
+      html += '<th>Número</th><th>Tipo</th><th>Meta</th><th>Requisitante</th><th>Ações</th>';
+      html += '</tr></thead><tbody>';
+
+      lista.forEach(r => {
+        html += '<tr>';
+        html += `<td data-label="Número"><strong>${escapeHtml(r.numero)}</strong></td>`;
+        html += `<td data-label="Tipo">${escapeHtml(r.tipo)}</td>`;
+        html += `<td data-label="Meta">${escapeHtml(r.meta || '')}</td>`;
+        html += `<td data-label="Requisitante">${escapeHtml(r.requisitante)}</td>`;
+        html += `<td data-label="Ações">`;
+        html += `<button class="btn btn-sm btn-primary" onclick="abrirFadex('${r.id}', '${escapeHtml(r.numero)}')">📝 Cadastrar FADEX</button>`;
+        html += '</td></tr>';
+      });
+
+      html += '</tbody></table>';
+      container.innerHTML = html;
+    }
+
+    function abrirFadex(id, numero) {
+      document.getElementById('fadexId').value = id;
+      document.getElementById('fadexNumero').textContent = numero;
+      limparMensagem('msgFadex');
+      document.getElementById('fadexNumeroWeb').value = '';
+      document.getElementById('fadexProtocolo').value = '';
+      document.getElementById('fadexComprovante').value = '';
+      document.getElementById('modalFadex').classList.add('show');
+    }
+
+    function fecharModalFadex() {
+      document.getElementById('modalFadex').classList.remove('show');
+    }
+
+    function salvarDadosFadex() {
+      const id = document.getElementById('fadexId').value;
+      const numWeb = document.getElementById('fadexNumeroWeb').value;
+      const protocolo = document.getElementById('fadexProtocolo').value;
+      const link = document.getElementById('fadexComprovante').value;
+
+      if (!numWeb.trim() || !protocolo.trim()) {
+        mostrarMensagem('msgFadex', 'Número WEB e Protocolo são obrigatórios.', 'warning');
+        return;
+      }
+
+      showLoading();
+      google.script.run
+        .withSuccessHandler(function() {
+          hideLoading();
+          mostrarMensagem('msgFadex', 'Dados salvos com sucesso!', 'success');
+          carregarCadastrador();
+        })
+        .withFailureHandler(function(err) {
+          hideLoading();
+          mostrarMensagem('msgFadex', err.message, 'error');
+        })
+        .atualizarDadosPortal(id, numWeb, protocolo, link);
+    }
+
+    function enviarParaAutorizacao() {
+      const id = document.getElementById('fadexId').value;
+
+      if (!confirm('Confirmar envio para autorização do coordenador?')) {
+        return;
+      }
+
+      showLoading();
+      google.script.run
+        .withSuccessHandler(function() {
+          hideLoading();
+          mostrarMensagem('msgFadex', 'Enviado para autorização com sucesso!', 'success');
+          carregarCadastrador();
+          setTimeout(() => fecharModalFadex(), 2000);
+        })
+        .withFailureHandler(function(err) {
+          hideLoading();
+          mostrarMensagem('msgFadex', err.message, 'error');
+        })
+        .enviarParaAutorizacao(id);
+    }
+
+    // ========================================================================
+    // INICIALIZAÇÃO AO CARREGAR
+    // ========================================================================
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
